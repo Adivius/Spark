@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.net.*;
 import java.io.*;
 
@@ -17,7 +18,7 @@ public class ChatClient {
         this.port = port;
     }
 
-    public void execute() {
+    public void start() {
         try {
             Socket socket = new Socket(hostname, port);
 
@@ -50,6 +51,6 @@ public class ChatClient {
         int port = Integer.parseInt(args[1]);*/
 
         ChatClient client = new ChatClient("localhost", 1243);
-        client.execute();
+        client.start();
     }
 }

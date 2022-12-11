@@ -18,6 +18,9 @@ public class UserThread extends Thread {
     }
 
     public void run() {
+        if (socket.isClosed()){
+            return;
+        }
         try {
             InputStream input = socket.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
@@ -40,7 +43,7 @@ public class UserThread extends Thread {
                 serverMessage = "[" + userName + "]: " + clientMessage;
                 server.broadcast(serverMessage, this);
 
-            } while (!clientMessage.equals("bye"));
+            } while (!clientMessage.equals("bye") && !socket.isClosed());
 
             server.removeUser(userName, this);
             socket.close();
@@ -51,6 +54,18 @@ public class UserThread extends Thread {
         } catch (IOException ex) {
             System.out.println("Error in UserThread: " + ex.getMessage());
             ex.printStackTrace();
+        }
+    }
+
+    void shutdown(){
+        try {
+            writer.close();
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            socket = null;
+            this.interrupt();
         }
     }
 
