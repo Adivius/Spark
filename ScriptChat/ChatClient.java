@@ -1,6 +1,6 @@
-import javax.swing.*;
-import java.net.*;
-import java.io.*;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * This is the chat client program.

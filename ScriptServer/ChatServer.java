@@ -17,27 +17,19 @@ public class ChatServer {
 
     public void start(ChatServer server) {
         running = true;
-
-        class MultithreadingDemo extends Thread {
-            public void run() {
-                try {
-                    serverSocket = new ServerSocket(port);
-                    print("Chat Server is listening on port " + port);
-                    while (!serverSocket.isClosed()) {
-                        Socket socket = serverSocket.accept();
-                        print("New user connected");
-                        UserThread newUser = new UserThread(socket, server);
-                        userThreads.add(newUser);
-                        newUser.start();
-                    }
-                    this.interrupt();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        try {
+            serverSocket = new ServerSocket(port);
+            print("Chat Server is listening on port " + port);
+            while (!serverSocket.isClosed()) {
+                Socket socket = serverSocket.accept();
+                print("New user connected");
+                UserThread newUser = new UserThread(socket, server);
+                userThreads.add(newUser);
+                newUser.start();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        MultithreadingDemo multithreadingDemo = new MultithreadingDemo();
-        multithreadingDemo.start();
     }
 
     /**

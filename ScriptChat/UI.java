@@ -30,7 +30,7 @@ public abstract class UI {
     public static void showStartDialog(){
         try {
             int port = Integer.parseInt(JOptionPane.showInputDialog("Please enter port"));
-            Main.start(port);
+            //Main.start(port);
         }catch (Exception e){
             JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "Please enter a valid port");
         }

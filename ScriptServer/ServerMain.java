@@ -7,9 +7,16 @@ public class ServerMain {
     }
 
     public static void start(int port){
-        ServerUI.connectButton.setText("Stop");
-        server = new ChatServer(port);
-        server.start(server);
+        class ServerThread extends Thread {
+            public void run() {
+                ServerUI.connectButton.setText("Stop");
+                server = new ChatServer(port);
+                server.start(server);
+            }
+        }
+        ServerThread serverThread = new ServerThread();
+        serverThread.start();
+
     }
 
     public static void stop(){
@@ -21,4 +28,7 @@ public class ServerMain {
     public static void main(String[] args) {
         new ServerMain();
     }
+
+
+
 }
