@@ -1,13 +1,12 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ChatServer {
     private final int port;
-    private final Set<String> userNames = new HashSet<>();
-    private final Set<UserThread> userThreads = new HashSet<>();
+    private final HashMap<String, User> users = new HashMap<>();
     boolean running = false;
     private ServerSocket serverSocket;
 
@@ -19,12 +18,15 @@ public class ChatServer {
         running = true;
         try {
             serverSocket = new ServerSocket(port);
-            print("Chat Server is listening on port " + port);
+            Server.print("Chat Server is listening on port " + port);
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
-                print("New user connected");
-                UserThread newUser = new UserThread(socket, server);
-                userThreads.add(newUser);
+                String ip = String.valueOf(socket.getInetAddress()).replace("/", "");
+                int port = socket.getPort();
+                String id = ip + Consts.SEPERATOR + port;
+                Server.print("New user connected: " + id);
+                User newUser = new User(socket, server, id);
+                users.put(id, newUser);
                 newUser.start();
             }
         } catch (Exception e) {
@@ -35,18 +37,18 @@ public class ChatServer {
     /**
      * Delivers a message from one user to others (broadcasting)
      */
-    void broadcast(String message, UserThread excludeUser) {
-        for (UserThread aUser : userThreads) {
-            if (aUser != excludeUser) {
-                aUser.sendMessage(message);
+    void broadcast(String message, User excludeUser) {
+        for(Map.Entry<String, User> userPair: users.entrySet()){
+            if (userPair.getValue() != excludeUser){
+                userPair.getValue().sendMessage(message);
             }
         }
     }
 
-    void shutdown(){
-        for (UserThread userThread: userThreads){
-            userThread.shutdown();
-            userThreads.remove(userThread);
+    void shutdown() {
+        for(Map.Entry<String, User> userPair: users.entrySet()){
+            userPair.getValue().interrupt();
+            users.remove(userPair.getKey());
         }
         try {
             serverSocket.close();
@@ -54,40 +56,28 @@ public class ChatServer {
             e.printStackTrace();
         }
         running = false;
-        print("Server closed");
+        Server.print("Server closed");
     }
 
-    /**
-     * Stores username of the newly connected client.
-     */
-    void addUserName(String userName) {
-        userNames.add(userName);
-    }
-
-    /**
-     * When a client is disconneted, removes the associated username and UserThread
-     */
-    void removeUser(String userName, UserThread aUser) {
-        boolean removed = userNames.remove(userName);
-        if (removed) {
-            userThreads.remove(aUser);
-            print("The user " + userName + " quitted");
+    String[] getUserNames() {
+        String[] names = new String[users.size()];
+        int i = 0;
+        for(Map.Entry<String, User> userPair: users.entrySet()){
+            names[i] = userPair.getValue().getUserName();
+            i++;
         }
-    }
-
-    Set<String> getUserNames() {
-        return this.userNames;
+        return  names;
     }
 
     /**
      * Returns true if there are other users connected (not count the currently connected user)
      */
     boolean hasUsers() {
-        return !this.userNames.isEmpty();
+        return !this.users.isEmpty();
     }
 
-    public static void  print(String message){
-        System.out.println(message);
-        ServerUI.textArea.setText(ServerUI.textArea.getText() + message + '\n');
+    void removeUser(String  id){
+        users.remove(id);
     }
+
 }

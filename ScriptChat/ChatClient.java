@@ -1,15 +1,13 @@
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-/**
- * This is the chat client program.
- * Type 'bye' to terminte the program.
- *
- * @author www.codejava.net
- */
 public class ChatClient {
     private String hostname;
+    public static PrintWriter writer;
+    private Socket socket;
     private int port;
     private String userName;
 
@@ -20,17 +18,25 @@ public class ChatClient {
 
     public void start() {
         try {
-            Socket socket = new Socket(hostname, port);
+            socket = new Socket(hostname, port);
 
-            System.out.println("Connected to the chat server");
+            UI.print("Connected to the chat server on port " + port);
 
             new ReadThread(socket, this).start();
-            new WriteThread(socket, this).start();
+            //new WriteThread(socket, this).start();
 
         } catch (UnknownHostException ex) {
-            System.out.println("Server not found: " + ex.getMessage());
+            UI.print("Server not found: " + ex.getMessage());
         } catch (IOException ex) {
-            System.out.println("I/O Error: " + ex.getMessage());
+            UI.print("I/O Error: " + ex.getMessage());
+        }
+
+        try {
+            OutputStream output = socket.getOutputStream();
+            writer = new PrintWriter(output, true);
+        } catch (IOException ex) {
+            UI.print("Error getting output stream: " + ex.getMessage());
+            ex.printStackTrace();
         }
 
     }
@@ -41,16 +47,5 @@ public class ChatClient {
 
     String getUserName() {
         return this.userName;
-    }
-
-
-    public static void main(String[] args) {
-        /*if (args.length < 2) return;
-
-        String hostname = args[0];
-        int port = Integer.parseInt(args[1]);*/
-
-        ChatClient client = new ChatClient("localhost", 1243);
-        client.start();
     }
 }

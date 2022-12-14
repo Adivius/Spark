@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 /**
@@ -7,7 +8,7 @@ import java.util.Scanner;
  * to the server.
  * It runs in an infinite loop until the user types 'bye' to quit.
  *
- * @author www.codejava.net
+ * @author Adivius
  */
 public class WriteThread extends Thread {
     private PrintWriter writer;
@@ -22,35 +23,39 @@ public class WriteThread extends Thread {
             OutputStream output = socket.getOutputStream();
             writer = new PrintWriter(output, true);
         } catch (IOException ex) {
-            System.out.println("Error getting output stream: " + ex.getMessage());
+            UI.print("Error getting output stream: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
 
     public void run() {
+        try {
 
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("\nEnter your name: ");
-        String userName = scanner.nextLine();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(UI.messageArea.getText().getBytes(StandardCharsets.UTF_8))));
+        UI.print("\nEnter your name: ");
+        String userName = "";
+        while ((userName = bufferedReader.readLine()) == null){}
         client.setUserName(userName);
         writer.println(userName);
-
         String text;
 
         do {
-            //System.out.println("[" + userName + "]: ");
-            text = scanner.nextLine();
+            //UI.print("[" + userName + "]: ");
+            text = bufferedReader.readLine();
             writer.println(text);
 
         } while (!text.equals("bye"));
 
-        try {
+
             socket.close();
+            bufferedReader.close();
         } catch (IOException ex) {
 
-            System.out.println("Error writing to server: " + ex.getMessage());
+            UI.print("Error writing to server: " + ex.getMessage());
         }
-        scanner.close();
+    }
+
+    public void sendMessage(String message){
+        writer.println(message);
     }
 }
