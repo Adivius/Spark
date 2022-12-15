@@ -5,25 +5,25 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class ChatClient {
-    private String hostname;
-    public static PrintWriter writer;
+    private final String ip;
+    private PrintWriter writer;
     private Socket socket;
-    private int port;
+    private final int port;
     private String userName;
+    private ReadThread readThread;
 
-    public ChatClient(String hostname, int port) {
-        this.hostname = hostname;
+    public ChatClient(String ip, int port) {
+        this.ip = ip;
         this.port = port;
     }
 
     public void start() {
         try {
-            socket = new Socket(hostname, port);
-
+            socket = new Socket(ip, port);
             UI.print("Connected to the chat server on port " + port);
 
-            new ReadThread(socket, this).start();
-            //new WriteThread(socket, this).start();
+            readThread = new ReadThread(socket, this);
+            readThread.start();
 
         } catch (UnknownHostException ex) {
             UI.print("Server not found: " + ex.getMessage());
@@ -47,5 +47,13 @@ public class ChatClient {
 
     String getUserName() {
         return this.userName;
+    }
+
+    public ReadThread getReadThread() {
+        return readThread;
+    }
+
+    public PrintWriter getWriter() {
+        return writer;
     }
 }

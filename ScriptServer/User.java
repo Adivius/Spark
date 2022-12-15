@@ -26,13 +26,12 @@ public class User extends Thread {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
             OutputStream output = socket.getOutputStream();
             writer = new PrintWriter(output, true);
-            writer.write("Please enter a name: ");
             printUsers();
-            String name = "";
-            while ((name = reader.readLine()) == null){
-
-            }
+            writer.println("Please enter a name: ");
+            String name;
+            while ((name = reader.readLine()) == null);
             userName = name;
+            writer.println("Welcome " + name);
 
             String serverMessage = "New user connected: " + userName;
             server.broadcast(serverMessage, this);
@@ -45,12 +44,8 @@ public class User extends Thread {
                 serverMessage = "[" + userName + "]: " + clientMessage;
                 server.broadcast(serverMessage, null);
             }
-
-            server.removeUser(id);
             socket.close();
-
-            serverMessage = userName + " has quitted.";
-            server.broadcast(serverMessage, this);
+            server.removeUser(id);
 
         } catch (IOException ex) {
             System.out.println("Error in User: " + ex.getMessage());
@@ -58,12 +53,8 @@ public class User extends Thread {
         }
     }
 
-    public String getUserName() {
+    String getUserName() {
         return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
     }
 
     /**
@@ -74,6 +65,6 @@ public class User extends Thread {
     }
 
     void printUsers(){
-        writer.println("Users: " + Arrays.toString(server.getUserNames()));
+        writer.println("Users: " + server.getUserNames().toString());
     }
 }

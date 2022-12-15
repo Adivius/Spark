@@ -1,17 +1,18 @@
 public class Main {
 
-    public static ChatClient client;
-
     public Main(String ip, int port){
         UI.init();
-        client = new ChatClient(ip, port);
+        ChatClient client = new ChatClient(ip, port);
         client.start();
+        UI.chatClient = client;
     }
 
     public static void main(String[] args) {
-        if (args.length < 2){
-            return;
+        try {
+            Main main = new Main(args[0], Integer.parseInt( args[1]));
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        new Main(args[0], Integer.parseInt( args[1]));
+
     }
 }

@@ -3,11 +3,11 @@ import java.net.*;
 
 public class ReadThread extends Thread {
     private BufferedReader reader;
-    private ChatClient client;
+    private final ChatClient client;
+    private boolean connected = false;
 
     public ReadThread(Socket socket, ChatClient client) {
         this.client = client;
-
         try {
             InputStream input = socket.getInputStream();
             reader = new BufferedReader(new InputStreamReader(input));
@@ -18,7 +18,8 @@ public class ReadThread extends Thread {
     }
 
     public void run() {
-        while (true) {
+        setConnected(true);
+        while (connected) {
             try {
                 String response = reader.readLine();
                 UI.print("\n" + response);
@@ -32,5 +33,21 @@ public class ReadThread extends Thread {
                 break;
             }
         }
+
+        try {
+            reader.close();
+        } catch (IOException ex) {
+            UI.print("Error disconnecting " + ex.getMessage());
+            ex.printStackTrace();
+        }
+
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 }
