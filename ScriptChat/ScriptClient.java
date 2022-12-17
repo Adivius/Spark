@@ -1,4 +1,6 @@
 import ScriptServer.packets.Packet;
+import ScriptServer.packets.PacketCommand;
+import ScriptServer.packets.PacketIds;
 import ScriptServer.packets.PacketMessage;
 
 import java.io.IOException;
@@ -25,7 +27,6 @@ public class ScriptClient {
             UI.print("Connected to the chat server on port " + port);
             readThread = new ReadThread(socket, this);
             readThread.start();
-
         } catch (UnknownHostException ex) {
             UI.print("ServerMain not found: " + ex.getMessage());
         } catch (IOException ex) {
@@ -42,17 +43,16 @@ public class ScriptClient {
 
     }
 
-    void end(){
+    void shutdown(){
         UI.print("Disconnected");
         try {
+            readThread.shutdown();
             writer.close();
             socket.close();
-            Thread.sleep(2000);
-        } catch (IOException | InterruptedException ex) {
+        } catch (IOException ex) {
             UI.print("Error disconnecting: " + ex.getMessage());
             ex.printStackTrace();
         }
-        System.exit(0);
     }
 
     void sendPacket(Packet packet){
@@ -63,8 +63,23 @@ public class ScriptClient {
         writer.println(bytes);
     }
 
-    void sendMessage(String message){
-        sendPacket(new PacketMessage(message));
+    public void prepareSendMessage(String message){
+        if (socket.isClosed()){
+            return;
+        }
+        if (message.isEmpty()){
+            return;
+        }
+        if (message.contains("~")){
+            return;
+        }
+        if (message.startsWith("/")){
+            String command = message.substring(1);
+            sendPacket(new PacketCommand(command));
+        }else {
+            sendPacket(new PacketMessage(message));
+        }
+        UI.messageArea.setText("");
     }
 
 }

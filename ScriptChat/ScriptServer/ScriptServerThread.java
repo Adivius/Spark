@@ -1,26 +1,28 @@
 package ScriptServer;
 
 import ScriptServer.packets.Packet;
-import ScriptServer.packets.PacketDisconnect;
 import ScriptServer.packets.PacketMessage;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
-public class ScriptServer {
+public class ScriptServerThread extends Thread {
     private final int port;
+    private ServerSocket serverSocket;
     private final HashMap<String, User> users = new HashMap<>();
 
-    public ScriptServer(int port) {
+    public ScriptServerThread(int port) {
         this.port = port;
     }
 
-    public void start() {
+    public void run(){
         try {
-            ServerSocket serverSocket = new ServerSocket(port);
+            serverSocket = new ServerSocket(port);
             print("Chat ServerMain is listening on port " + port);
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
@@ -64,13 +66,15 @@ public class ScriptServer {
     }
 
     void removeUser(String  id){
-        sendPacket(users.get(id), new PacketDisconnect());
+        users.get(id).shutdown();
         broadcast(users.get(id).getUserName() + " quit", null);
-        users.get(id).interrupt();
-        //users.remove(id);
+        print("User disconnected: " + id);
+        users.remove(id);
+        System.out.println(users);
     }
 
     void addUser(Socket socket){
+
         String ip = String.valueOf(socket.getInetAddress()).replace("/", "");
         int port = socket.getPort();
         String id = ip + Consts.SEPARATOR + port;
@@ -80,8 +84,30 @@ public class ScriptServer {
         newUser.start();
     }
 
+    public void removeUserByName(String name){
+        for(Map.Entry<String, User> userPair: users.entrySet()){
+            String userName = userPair.getValue().getUserName();
+            if (Objects.equals(userName, name)){
+                removeUser(userPair.getKey());
+            }
+        }
+    }
+
     public static void print(String message){
         System.out.println(message);
+    }
+
+    public void shutdown(){
+        for(Map.Entry<String, User> userPair: users.entrySet()){
+            userPair.getValue().shutdown();
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            this.interrupt();
+            System.exit(0);
+        }
     }
 
 }

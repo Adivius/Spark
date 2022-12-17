@@ -11,11 +11,15 @@ public class PacketMessage extends Packet{
 
     public PacketMessage(String[] str){
         super(PacketIds.MESSAGE);
-        this.MESSAGE = str[1];
+        if (str.length < 2){
+            this.MESSAGE = null;
+        }else {
+            this.MESSAGE = str[1];
+        }
     }
 
     @Override
     public String encode() {
-        return Integer.toString(PacketIds.MESSAGE) + PacketIds.SEPARATOR + MESSAGE;
+        return PacketIds.MESSAGE + PacketIds.SEPARATOR + MESSAGE;
     }
 }

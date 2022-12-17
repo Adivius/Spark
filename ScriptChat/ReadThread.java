@@ -25,7 +25,10 @@ public class ReadThread extends Thread {
     public void run() {
         loop: while (true) {
             try {
-                String response = reader.readLine();
+                String response;
+                if((response = reader.readLine()) == null){
+                    break;
+                }
                 String[] packet = response.split(PacketIds.SEPARATOR);
                 int packetID = Integer.parseInt(packet[0]);
 
@@ -44,13 +47,12 @@ public class ReadThread extends Thread {
                 break;
             }
         }
-        try {
-            reader.close();
-        } catch (IOException ex) {
-            UI.print("Error disconnecting " + ex.getMessage());
-            ex.printStackTrace();
-        }
-        client.end();
+        client.shutdown();
+    }
+
+    public void shutdown() throws IOException {
+        reader.close();
+        this.interrupt();
     }
 
 }

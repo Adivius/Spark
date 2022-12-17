@@ -32,7 +32,7 @@ public abstract class UI {
         screen.add(scrollPane, BorderLayout.CENTER);
 
         messageArea = new JTextField();
-        messageArea.addActionListener(e -> prepareSendMessage(messageArea.getText()));
+        messageArea.addActionListener(e -> scriptClient.prepareSendMessage(messageArea.getText()));
         messageArea.setBorder(new LineBorder(Color.DARK_GRAY, 1));
         messageArea.setMargin(new Insets(10, 10, 10, 10));
         messageArea.setPreferredSize(new Dimension(SCREEN_WIDTH, 50));
@@ -44,6 +44,7 @@ public abstract class UI {
             @Override
             public void windowClosing(WindowEvent e) {
                 scriptClient.sendPacket(new PacketDisconnect());
+                scriptClient.shutdown();
             }
         });
     }
@@ -51,10 +52,5 @@ public abstract class UI {
     public static void print(String message){
         scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
         chatArea.setText(chatArea.getText() + message + '\n');
-    }
-
-    public static void prepareSendMessage(String message){
-        scriptClient.sendMessage(message);
-        messageArea.setText("");
     }
 }
