@@ -1,12 +1,14 @@
-public class Server {
+package ScriptServer;
 
-    public static ChatServer server;
+public class ServerMain {
 
-    public Server(int port){
+    public static ScriptServer server;
+
+    public ServerMain(int port){
         class ServerThread extends Thread {
             public void run() {
-                server = new ChatServer(port);
-                server.start(server);
+                server = new ScriptServer(port);
+                server.start();
             }
         }
         ServerThread serverThread = new ServerThread();
@@ -15,7 +17,7 @@ public class Server {
 
     public static void main(String[] args) {
         try{
-            new Server(Integer.parseInt(args[0]));
+            new ServerMain(Integer.parseInt(args[0]));
         }catch (Exception e){
             e.printStackTrace();
         }

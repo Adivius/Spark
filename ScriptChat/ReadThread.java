@@ -1,14 +1,19 @@
-import java.io.*;
-import java.net.*;
+import ScriptServer.packets.PacketIds;
+import ScriptServer.packets.PacketMessage;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.Socket;
 
 public class ReadThread extends Thread {
     private BufferedReader reader;
-    private final ChatClient client;
-    private boolean connected = false;
+    private ScriptClient client;
 
-    public ReadThread(Socket socket, ChatClient client) {
-        this.client = client;
+    public ReadThread(Socket socket, ScriptClient client) {
         try {
+            this.client = client;
             InputStream input = socket.getInputStream();
             reader = new BufferedReader(new InputStreamReader(input));
         } catch (IOException ex) {
@@ -18,14 +23,20 @@ public class ReadThread extends Thread {
     }
 
     public void run() {
-        setConnected(true);
-        while (connected) {
+        loop: while (true) {
             try {
                 String response = reader.readLine();
-                UI.print("\n" + response);
+                String[] packet = response.split(PacketIds.SEPARATOR);
+                int packetID = Integer.parseInt(packet[0]);
 
-                // prints the username after displaying the server's message
-                if (client.getUserName() != null) {
+                switch (packetID) {
+                    case PacketIds.MESSAGE:
+                        PacketMessage packetMessage = new PacketMessage(packet);
+                        UI.print("\n" + packetMessage.MESSAGE);
+                        break;
+                    case PacketIds.DISCONNECT:
+                        break loop;
+
                 }
             } catch (IOException ex) {
                 UI.print("Error reading from server: " + ex.getMessage());
@@ -33,21 +44,13 @@ public class ReadThread extends Thread {
                 break;
             }
         }
-
         try {
             reader.close();
         } catch (IOException ex) {
             UI.print("Error disconnecting " + ex.getMessage());
             ex.printStackTrace();
         }
-
+        client.end();
     }
 
-    public void setConnected(boolean connected) {
-        this.connected = connected;
-    }
-
-    public boolean isConnected() {
-        return connected;
-    }
 }

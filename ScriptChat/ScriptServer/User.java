@@ -1,17 +1,20 @@
+package ScriptServer;
+
+import ScriptServer.packets.PacketIds;
+import ScriptServer.packets.PacketMessage;
+
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
-import java.util.Arrays;
 
 public class User extends Thread {
 
     private PrintWriter writer;
     private String userName;
-    private final ChatServer server;
+    private final ScriptServer server;
     private final Socket socket;
     private final String id;
 
-    public User(Socket socket, ChatServer server, String id) {
+    public User(Socket socket, ScriptServer server, String id) {
         this.socket = socket;
         this.server = server;
         this.id = id;
@@ -26,23 +29,33 @@ public class User extends Thread {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
             OutputStream output = socket.getOutputStream();
             writer = new PrintWriter(output, true);
-            printUsers();
-            writer.println("Please enter a name: ");
+            server.sendMessage(this, server.getUserNames());
+
+            server.sendMessage(this, "Please enter a name: ");
             String name;
             while ((name = reader.readLine()) == null);
-            userName = name;
-            writer.println("Welcome " + name);
+            userName = name.split(PacketIds.SEPARATOR)[1];
+            server.sendMessage(this, "Welcome " + userName);
 
             String serverMessage = "New user connected: " + userName;
             server.broadcast(serverMessage, this);
-            String clientMessage;
+            String response;
             while (!socket.isClosed() && socket.isConnected()){
-                clientMessage = reader.readLine();
-                if (clientMessage.equals("bye")){
-                    break;
+                response = reader.readLine();
+                System.out.println(response);
+                String[] packet = response.split(PacketIds.SEPARATOR);
+                int packetID = Integer.parseInt(packet[0]);
+                switch (packetID){
+                    case PacketIds.MESSAGE:
+                        PacketMessage packetMessage = new PacketMessage(packet);
+                        String message = "[" + userName + "]: " + packetMessage.MESSAGE;
+                        server.broadcast(message, null);
+                        break;
+                    case PacketIds.DISCONNECT:
+                        socket.close();
+                        server.removeUser(id);
+                        break;
                 }
-                serverMessage = "[" + userName + "]: " + clientMessage;
-                server.broadcast(serverMessage, null);
             }
             socket.close();
             server.removeUser(id);
@@ -60,11 +73,7 @@ public class User extends Thread {
     /**
      * Sends a message to the client.
      */
-    void sendMessage(String message) {
-        writer.println(message);
-    }
-
-    void printUsers(){
-        writer.println("Users: " + server.getUserNames().toString());
+    void send(String bytes) {
+        writer.println(bytes);
     }
 }

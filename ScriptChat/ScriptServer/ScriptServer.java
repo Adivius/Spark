@@ -1,23 +1,27 @@
-import java.io.IOException;
+package ScriptServer;
+
+import ScriptServer.packets.Packet;
+import ScriptServer.packets.PacketDisconnect;
+import ScriptServer.packets.PacketMessage;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChatServer {
+public class ScriptServer {
     private final int port;
     private final HashMap<String, User> users = new HashMap<>();
-    private ServerSocket serverSocket;
 
-    public ChatServer(int port) {
+    public ScriptServer(int port) {
         this.port = port;
     }
 
-    public void start(ChatServer server) {
+    public void start() {
         try {
-            serverSocket = new ServerSocket(port);
-            print("Chat Server is listening on port " + port);
+            ServerSocket serverSocket = new ServerSocket(port);
+            print("Chat ServerMain is listening on port " + port);
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
                 addUser(socket);
@@ -27,15 +31,7 @@ public class ChatServer {
         }
     }
 
-    void addUser(Socket socket){
-        String ip = String.valueOf(socket.getInetAddress()).replace("/", "");
-        int port = socket.getPort();
-        String id = ip + Consts.SEPERATOR + port;
-        User newUser = new User(socket, this, id);
-        print("New user connected: " + id);
-        users.put(id, newUser);
-        newUser.start();
-    }
+
 
     /**
      * Delivers a message from one user to others (broadcasting)
@@ -43,12 +39,20 @@ public class ChatServer {
     void broadcast(String message, User excludeUser) {
         for(Map.Entry<String, User> userPair: users.entrySet()){
             if (userPair.getValue() != excludeUser){
-                userPair.getValue().sendMessage(message);
+                sendPacket(userPair.getValue(), new PacketMessage(message));
             }
         }
     }
 
-    ArrayList<String> getUserNames(){
+    void sendPacket(User user, Packet packet){
+        user.send(packet.encode());
+    }
+
+    void sendMessage(User user, String message){
+        sendPacket(user, new PacketMessage(message));
+    }
+
+    String getUserNames(){
         ArrayList<String> names = new ArrayList<>();
         for(Map.Entry<String, User> userPair: users.entrySet()){
             String userName = userPair.getValue().getUserName();
@@ -56,14 +60,26 @@ public class ChatServer {
                 names.add(userName);
             }
         }
-        return names;
+        return "Users: " + names;
     }
 
     void removeUser(String  id){
+        sendPacket(users.get(id), new PacketDisconnect());
         broadcast(users.get(id).getUserName() + " quit", null);
         users.get(id).interrupt();
-        users.remove(id);
+        //users.remove(id);
     }
+
+    void addUser(Socket socket){
+        String ip = String.valueOf(socket.getInetAddress()).replace("/", "");
+        int port = socket.getPort();
+        String id = ip + Consts.SEPARATOR + port;
+        User newUser = new User(socket, this, id);
+        print("New user connected: " + id);
+        users.put(id, newUser);
+        newUser.start();
+    }
+
     public static void print(String message){
         System.out.println(message);
     }

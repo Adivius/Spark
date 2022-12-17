@@ -1,18 +1,20 @@
+import ScriptServer.packets.Packet;
+import ScriptServer.packets.PacketMessage;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class ChatClient {
+public class ScriptClient {
     private final String ip;
     private PrintWriter writer;
     private Socket socket;
     private final int port;
-    private String userName;
     private ReadThread readThread;
 
-    public ChatClient(String ip, int port) {
+    public ScriptClient(String ip, int port) {
         this.ip = ip;
         this.port = port;
     }
@@ -21,12 +23,11 @@ public class ChatClient {
         try {
             socket = new Socket(ip, port);
             UI.print("Connected to the chat server on port " + port);
-
             readThread = new ReadThread(socket, this);
             readThread.start();
 
         } catch (UnknownHostException ex) {
-            UI.print("Server not found: " + ex.getMessage());
+            UI.print("ServerMain not found: " + ex.getMessage());
         } catch (IOException ex) {
             UI.print("I/O Error: " + ex.getMessage());
         }
@@ -41,19 +42,29 @@ public class ChatClient {
 
     }
 
-    void setUserName(String userName) {
-        this.userName = userName;
+    void end(){
+        UI.print("Disconnected");
+        try {
+            writer.close();
+            socket.close();
+            Thread.sleep(2000);
+        } catch (IOException | InterruptedException ex) {
+            UI.print("Error disconnecting: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        System.exit(0);
     }
 
-    String getUserName() {
-        return this.userName;
+    void sendPacket(Packet packet){
+        send(packet.encode());
     }
 
-    public ReadThread getReadThread() {
-        return readThread;
+    void send(String bytes){
+        writer.println(bytes);
     }
 
-    public PrintWriter getWriter() {
-        return writer;
+    void sendMessage(String message){
+        sendPacket(new PacketMessage(message));
     }
+
 }
