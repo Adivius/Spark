@@ -57,6 +57,7 @@ public class ScriptClient {
 
     void sendPacket(Packet packet){
         send(packet.encode());
+
     }
 
     void send(String bytes){

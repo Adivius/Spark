@@ -9,6 +9,7 @@ public class Main {
             client.start();
             client.sendPacket(new PacketConnect(args[2]));
             UI.scriptClient = client;
+            UI.screen.setTitle(args[2]);
         }catch (Exception e){
             e.printStackTrace();
         }

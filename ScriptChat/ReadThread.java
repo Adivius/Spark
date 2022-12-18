@@ -10,8 +10,10 @@ import java.net.Socket;
 public class ReadThread extends Thread {
     private BufferedReader reader;
     private ScriptClient client;
+    private Socket socket;
 
     public ReadThread(Socket socket, ScriptClient client) {
+        this.socket = socket;
         try {
             this.client = client;
             InputStream input = socket.getInputStream();
@@ -23,8 +25,11 @@ public class ReadThread extends Thread {
     }
 
     public void run() {
-        loop: while (true) {
+        loop: while (!socket.isClosed()) {
             try {
+                if (!reader.ready()){
+                    continue;
+                }
                 String response;
                 if((response = reader.readLine()) == null){
                     break;

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.rmi.ServerError;
 import java.util.Arrays;
 
 public class User extends Thread {
@@ -16,20 +17,24 @@ public class User extends Thread {
     private PrintWriter writer;
     private BufferedReader reader;
     private String userName;
-    private final ScriptServerThread server;
+    private final ScriptServer server;
     private final Socket socket;
     private final String id;
+    private int securityLevel;
+    private boolean running;
 
-    public User(Socket socket, ScriptServerThread server, String id) {
+    public User(Socket socket, ScriptServer server, String id, int securityLevel) {
         this.socket = socket;
         this.server = server;
         this.id = id;
+        this.securityLevel = securityLevel;
     }
 
     public void run() {
         if (socket.isClosed()) {
             return;
         }
+        running = true;
         try {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream(), true);
@@ -38,13 +43,17 @@ public class User extends Thread {
                 response = reader.readLine();
             } while (response == null);
             userName = response.split(PacketIds.SEPARATOR)[1];
-            ScriptServerThread.print(response);
-            server.sendMessage(this, "Welcome " + userName);
-            server.broadcast("New user connected: " + userName, this);
+            ScriptServer.print(response);
+            server.sendMessage(this, "Welcome " + userName + ", " + server.getUserCount() + " people are online");
+            server.broadcast("New user connected: " + userName, null);
+            server.sendMessage(this, server.getChat());
             loop:
-            while (!socket.isClosed() && socket.isConnected()) {
+            while (!socket.isClosed()) {
+                if (!reader.ready() || !socket.isConnected()){
+                    continue;
+                }
                 response = reader.readLine();
-                ScriptServerThread.print(response);
+                ScriptServer.print(response);
                 String[] packet = response.split(PacketIds.SEPARATOR);
                 int packetID = Integer.parseInt(packet[0]);
                 switch (packetID) {
@@ -63,32 +72,17 @@ public class User extends Thread {
                         String[] commands = packetCommand.COMMAND.split(" ");
                         String command = commands[0];
                         String[] args = Arrays.copyOfRange(commands, 1, commands.length);
-                        handleCommand(command, args);
+                        server.getCommandHandler().handleCommand(this, command, server, args);
                         break;
                 }
             }
-            server.removeUser(id);
+            if (!socket.isClosed()) {
+                server.removeUserById(id);
+            }
 
         } catch (IOException ex) {
-            ScriptServerThread.print("Error in User: " + ex.getMessage());
+            ScriptServer.print("Error in User: " + ex.getMessage());
             ex.printStackTrace();
-        }
-    }
-
-    void handleCommand(String command, String[] args) {
-        switch (command) {
-            case "listUser":
-                server.sendMessage(this, server.getUserNames());
-                break;
-            case "bye":
-                server.removeUser(id);
-                break;
-            case "kick":
-                server.removeUserByName(args[0]);
-                break;
-            case "stop":
-                server.shutdown();
-                break;
         }
     }
 
@@ -104,6 +98,7 @@ public class User extends Thread {
     }
 
     public void shutdown() {
+        running = false;
         try {
             if (!socket.isClosed()) {
                 socket.close();
@@ -112,8 +107,20 @@ public class User extends Thread {
             writer.close();
             this.interrupt();
         } catch (IOException e) {
-            ScriptServerThread.print("Error in shutdown user: " + e.getMessage());
+            ScriptServer.print("Error in shutdown user: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public String getUserId() {
+        return id;
+    }
+
+    public int getSecurityLevel() {
+        return securityLevel;
+    }
+
+    public ScriptServer getServer() {
+        return server;
     }
 }
