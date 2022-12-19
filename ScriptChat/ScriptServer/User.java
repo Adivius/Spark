@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.rmi.ServerError;
 import java.util.Arrays;
 
 public class User extends Thread {
@@ -48,7 +47,7 @@ public class User extends Thread {
             server.broadcast("New user connected: " + userName, this);
             loop:
             while (!socket.isClosed()) {
-                if (!reader.ready() || !socket.isConnected()){
+                if (!reader.ready() || !socket.isConnected()) {
                     continue;
                 }
                 response = reader.readLine();
