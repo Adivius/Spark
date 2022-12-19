@@ -44,7 +44,7 @@ public abstract class UI {
             @Override
             public void windowClosing(WindowEvent e) {
                 scriptClient.sendPacket(new PacketDisconnect());
-                scriptClient.shutdown();
+                scriptClient.shutdown(": You quit!");
             }
         });
     }

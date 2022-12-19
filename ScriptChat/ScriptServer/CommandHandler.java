@@ -6,7 +6,7 @@ public class CommandHandler {
 
     public void handleCommand(User sender, String command, ScriptServer server, String[] args) {
         switch (command) {
-            case "listUser":
+            case "listuser":
                 if (!Security.hasPermission(sender, Security.MEMBER)) {
                     notAllowed(sender);
                     return;
@@ -64,6 +64,33 @@ public class CommandHandler {
                 break;
             case "kartoffel":
                 server.sendMessage(sender, "Es sind " + server.getUserCount() + " Kartoffeln online");
+                break;
+            case "setlevel":
+                if (!Security.hasPermission(sender, Security.ADMIN)) {
+                    notAllowed(sender);
+                    return;
+                }
+                if (args.length < 2) {
+                    server.sendMessage(sender, "Please enter a user and a level!");
+                    return;
+                }
+                if (!server.hasUserByName(args[0])) {
+                    server.sendMessage(sender, "User " + args[0] + " is not online!");
+                    return;
+                }
+                if (!Security.isInt(args[1])){
+                    server.sendMessage(sender, "Please enter a valid level!");
+                    return;
+                }
+                int level = Integer.parseInt(args[1]);
+                User change = server.getUserByName(args[0]);
+                if (sender.getSecurityLevel() < level){
+                    notAllowed(sender);
+                    return;
+                }
+                change.setSecurityLevel(level);
+                server.sendMessage(change, "Your security level was set to " + level);
+                server.sendMessage(sender,   " Security level of " + change.getUserName() + " was set to " + level);
                 break;
             default:
                 server.sendMessage(sender, "Command " + command + " was invalid!");

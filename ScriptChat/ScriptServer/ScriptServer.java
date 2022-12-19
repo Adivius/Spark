@@ -1,6 +1,7 @@
 package ScriptServer;
 
 import ScriptServer.packets.Packet;
+import ScriptServer.packets.PacketDisconnect;
 import ScriptServer.packets.PacketIds;
 import ScriptServer.packets.PacketMessage;
 
@@ -17,7 +18,7 @@ public class ScriptServer extends Thread {
     private ServerSocket serverSocket;
     private CommandHandler commandHandler;
     private final HashMap<String, User> users = new HashMap<>();
-    private final String CHATFILE = "chat.txt";
+    private final File CHATFILE = new File("chat.txt");
 
     public ScriptServer(int port) {
         this.port = port;
@@ -46,15 +47,6 @@ public class ScriptServer extends Thread {
             if (userPair.getValue() != excludeUser) {
                 sendPacket(userPair.getValue(), new PacketMessage(message));
             }
-        }
-        try {
-            String chat = getChat();
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(CHATFILE));
-            bufferedWriter.write(chat + message + "\n");
-            bufferedWriter.close();
-        } catch (IOException e) {
-            print(e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -99,6 +91,15 @@ public class ScriptServer extends Thread {
     }
 
     void removeUserById(String id) {
+        sendPacket(users.get(id), new PacketDisconnect());
+        users.get(id).shutdown();
+        broadcast(users.get(id).getUserName() + " quit", null);
+        print("User disconnected: " + id);
+        users.remove(id);
+    }
+
+    void removeUserById(String id, String reason) {
+        sendPacket(users.get(id), new PacketDisconnect(reason));
         users.get(id).shutdown();
         broadcast(users.get(id).getUserName() + " quit", null);
         print("User disconnected: " + id);
@@ -150,8 +151,8 @@ public class ScriptServer extends Thread {
     }
 
     public void shutdown() {
-        for (Map.Entry<String, User> userPair : users.entrySet()) {
-            userPair.getValue().shutdown();
+        for (String user : users.keySet()) {
+            removeUserById(user, ": Server shutdown");
             try {
                 serverSocket.close();
             } catch (IOException e) {

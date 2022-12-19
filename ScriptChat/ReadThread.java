@@ -1,3 +1,4 @@
+import ScriptServer.packets.PacketDisconnect;
 import ScriptServer.packets.PacketIds;
 import ScriptServer.packets.PacketMessage;
 
@@ -25,6 +26,7 @@ public class ReadThread extends Thread {
     }
 
     public void run() {
+        String shutdownReason = null;
         loop: while (!socket.isClosed()) {
             try {
                 if (!reader.ready()){
@@ -43,6 +45,8 @@ public class ReadThread extends Thread {
                         UI.print("\n" + packetMessage.MESSAGE);
                         break;
                     case PacketIds.DISCONNECT:
+                        PacketDisconnect packetDisconnect = new PacketDisconnect(packet);
+                        shutdownReason = packetDisconnect.REASON;
                         break loop;
 
                 }
@@ -52,10 +56,13 @@ public class ReadThread extends Thread {
                 break;
             }
         }
-        client.shutdown();
+        client.shutdown(shutdownReason);
     }
 
     public void shutdown() throws IOException {
+        if (!socket.isClosed()){
+            socket.close();
+        }
         reader.close();
         this.interrupt();
     }

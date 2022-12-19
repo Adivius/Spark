@@ -45,8 +45,7 @@ public class User extends Thread {
             userName = response.split(PacketIds.SEPARATOR)[1];
             ScriptServer.print(response);
             server.sendMessage(this, "Welcome " + userName + ", " + server.getUserCount() + " people are online");
-            server.broadcast("New user connected: " + userName, null);
-            server.sendMessage(this, server.getChat());
+            server.broadcast("New user connected: " + userName, this);
             loop:
             while (!socket.isClosed()) {
                 if (!reader.ready() || !socket.isConnected()){
@@ -70,7 +69,7 @@ public class User extends Thread {
                     case PacketIds.COMMAND:
                         PacketCommand packetCommand = new PacketCommand(packet);
                         String[] commands = packetCommand.COMMAND.split(" ");
-                        String command = commands[0];
+                        String command = commands[0].toLowerCase();
                         String[] args = Arrays.copyOfRange(commands, 1, commands.length);
                         server.getCommandHandler().handleCommand(this, command, server, args);
                         break;
@@ -122,5 +121,9 @@ public class User extends Thread {
 
     public ScriptServer getServer() {
         return server;
+    }
+
+    public void setSecurityLevel(int securityLevel) {
+        this.securityLevel = securityLevel;
     }
 }

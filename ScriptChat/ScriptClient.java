@@ -43,8 +43,8 @@ public class ScriptClient {
 
     }
 
-    void shutdown(){
-        UI.print("Disconnected");
+    void shutdown(String reason){
+        UI.print("Disconnected" + reason);
         try {
             readThread.shutdown();
             writer.close();
