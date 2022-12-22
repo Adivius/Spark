@@ -1,8 +1,6 @@
 package ScriptServer;
 
-import ScriptServer.packets.PacketCommand;
-import ScriptServer.packets.PacketIds;
-import ScriptServer.packets.PacketMessage;
+import ScriptServer.packets.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +18,7 @@ public class User extends Thread {
     private final Socket socket;
     private final String id;
     private int securityLevel;
-    private boolean running;
+    private String disconnectReason = null;
 
     public User(Socket socket, ScriptServer server, String id, int securityLevel) {
         this.socket = socket;
@@ -33,7 +31,6 @@ public class User extends Thread {
         if (socket.isClosed()) {
             return;
         }
-        running = true;
         try {
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream(), true);
@@ -41,10 +38,19 @@ public class User extends Thread {
             do {
                 response = reader.readLine();
             } while (response == null);
-            userName = response.split(PacketIds.SEPARATOR)[1];
             ScriptServer.print(response);
-            server.sendMessage(this, "Welcome " + userName + ", " + server.getUserCount() + " people are online");
-            server.broadcast("New user connected: " + userName, this);
+            int i = 0;
+            String name;
+            while (true){
+                name = response.split(PacketIds.SEPARATOR)[1];
+                if (!server.hasUserByName(name + ((i == 0) ? "" : Integer.toString(i)))){
+                    userName = name + ((i == 0) ? "" : i);
+                    break;
+                }
+                i++;
+            }
+            server.sendPacket(this, new PacketJoin("Welcome " + userName + ", " + server.getUserCount() + " people are online"));
+            server.broadcast(new PacketJoin("New user connected: " + userName), this);
             loop:
             while (!socket.isClosed()) {
                 if (!reader.ready() || !socket.isConnected()) {
@@ -60,10 +66,11 @@ public class User extends Thread {
                         if (packetMessage.MESSAGE == null) {
                             break;
                         }
-                        String message = "[" + userName + "]: " + packetMessage.MESSAGE;
-                        server.broadcast(message, null);
+                        server.broadcast(packetMessage.MESSAGE, null, userName);
                         break;
                     case PacketIds.DISCONNECT:
+                        PacketDisconnect packetDisconnect = new PacketDisconnect(packet);
+                        disconnectReason = packetDisconnect.REASON;
                         break loop;
                     case PacketIds.COMMAND:
                         PacketCommand packetCommand = new PacketCommand(packet);
@@ -75,7 +82,7 @@ public class User extends Thread {
                 }
             }
             if (!socket.isClosed()) {
-                server.removeUserById(id);
+                server.removeUserById(id, disconnectReason);
             }
 
         } catch (IOException ex) {
@@ -96,7 +103,6 @@ public class User extends Thread {
     }
 
     public void shutdown() {
-        running = false;
         try {
             if (!socket.isClosed()) {
                 socket.close();

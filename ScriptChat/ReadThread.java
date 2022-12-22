@@ -1,5 +1,6 @@
 import ScriptServer.packets.PacketDisconnect;
 import ScriptServer.packets.PacketIds;
+import ScriptServer.packets.PacketJoin;
 import ScriptServer.packets.PacketMessage;
 
 import java.io.BufferedReader;
@@ -27,13 +28,14 @@ public class ReadThread extends Thread {
 
     public void run() {
         String shutdownReason = null;
-        loop: while (!socket.isClosed()) {
+        loop:
+        while (!socket.isClosed()) {
             try {
-                if (!reader.ready()){
+                if (!reader.ready()) {
                     continue;
                 }
                 String response;
-                if((response = reader.readLine()) == null){
+                if ((response = reader.readLine()) == null) {
                     break;
                 }
                 String[] packet = response.split(PacketIds.SEPARATOR);
@@ -42,13 +44,15 @@ public class ReadThread extends Thread {
                 switch (packetID) {
                     case PacketIds.MESSAGE:
                         PacketMessage packetMessage = new PacketMessage(packet);
-                        UI.print("\n" + packetMessage.MESSAGE);
+                        UI.print("\n[" + packetMessage.SENDER + "]: " + packetMessage.MESSAGE);
                         break;
                     case PacketIds.DISCONNECT:
                         PacketDisconnect packetDisconnect = new PacketDisconnect(packet);
                         shutdownReason = packetDisconnect.REASON;
                         break loop;
-
+                    case PacketIds.JOIN:
+                        PacketJoin packetJoin = new PacketJoin(packet);
+                        UI.print("\nServer: " + packetJoin.MESSAGE);
                 }
             } catch (IOException ex) {
                 UI.print("Error reading from server: " + ex.getMessage());
@@ -60,7 +64,7 @@ public class ReadThread extends Thread {
     }
 
     public void shutdown() throws IOException {
-        if (!socket.isClosed()){
+        if (!socket.isClosed()) {
             socket.close();
         }
         reader.close();

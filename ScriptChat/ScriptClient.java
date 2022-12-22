@@ -1,6 +1,5 @@
 import ScriptServer.packets.Packet;
 import ScriptServer.packets.PacketCommand;
-import ScriptServer.packets.PacketIds;
 import ScriptServer.packets.PacketMessage;
 
 import java.io.IOException;

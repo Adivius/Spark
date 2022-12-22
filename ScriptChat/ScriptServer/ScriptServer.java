@@ -1,9 +1,6 @@
 package ScriptServer;
 
-import ScriptServer.packets.Packet;
-import ScriptServer.packets.PacketDisconnect;
-import ScriptServer.packets.PacketIds;
-import ScriptServer.packets.PacketMessage;
+import ScriptServer.packets.*;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -42,10 +39,18 @@ public class ScriptServer extends Thread {
     /**
      * Delivers a message from one user to others (broadcasting)
      */
-    void broadcast(String message, User excludeUser) {
+    void broadcast(String message, User excludeUser, String sender) {
         for (Map.Entry<String, User> userPair : users.entrySet()) {
             if (userPair.getValue() != excludeUser) {
-                sendPacket(userPair.getValue(), new PacketMessage(message));
+                sendPacket(userPair.getValue(), new PacketMessage(message, sender));
+            }
+        }
+    }
+
+    void broadcast(Packet packet, User excludeUser) {
+        for (Map.Entry<String, User> userPair : users.entrySet()) {
+            if (userPair.getValue() != excludeUser) {
+                sendPacket(userPair.getValue(), packet);
             }
         }
     }
@@ -90,18 +95,10 @@ public class ScriptServer extends Thread {
         return users.size();
     }
 
-    void removeUserById(String id) {
-        sendPacket(users.get(id), new PacketDisconnect());
-        users.get(id).shutdown();
-        broadcast(users.get(id).getUserName() + " quit", null);
-        print("User disconnected: " + id);
-        users.remove(id);
-    }
-
     void removeUserById(String id, String reason) {
         sendPacket(users.get(id), new PacketDisconnect(reason));
         users.get(id).shutdown();
-        broadcast(users.get(id).getUserName() + " quit", null);
+        broadcast(new PacketQuit(users.get(id).getUserName() + " quit, " + getUserCount() + " people are online" ), null);
         print("User disconnected: " + id);
         users.remove(id);
     }
@@ -110,6 +107,9 @@ public class ScriptServer extends Thread {
         User user = null;
         for (Map.Entry<String, User> userPair : users.entrySet()) {
             String userName = userPair.getValue().getUserName();
+            if (userName == null){
+                continue;
+            }
             if (userName.equals(name)) {
                 user = userPair.getValue();
             }
@@ -132,17 +132,25 @@ public class ScriptServer extends Thread {
         newUser.start();
     }
 
-    public void removeUserByName(String name) {
+    public void removeUserByName(String name, String reason) {
         try {
             for (Map.Entry<String, User> userPair : users.entrySet()) {
                 String userName = userPair.getValue().getUserName();
                 if (Objects.equals(userName, name)) {
-                    removeUserById(userPair.getKey());
+                    removeUserById(userPair.getKey(), reason);
                 }
             }
         } catch (Exception e) {
             print(e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public void removeUsers(User excludedUser, String reason){
+        for (Map.Entry<String, User> userPair : users.entrySet()) {
+            if (!(excludedUser == userPair.getValue())){
+                removeUserById(userPair.getKey(), reason);
+            }
         }
     }
 
