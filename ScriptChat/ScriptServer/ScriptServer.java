@@ -8,23 +8,19 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class ScriptServer extends Thread {
+
     private final int port;
     private ServerSocket serverSocket;
-    private CommandHandler commandHandler;
     private final HashMap<String, User> users = new HashMap<>();
-    private final File CHATFILE = new File("chat.txt");
-
     public ScriptServer(int port) {
         this.port = port;
-        this.commandHandler = new CommandHandler();
     }
-
     public void run() {
         try {
             serverSocket = new ServerSocket(port);
+            CommandHandler.innit();
             print("Chat ServerMain is listening on port " + port);
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
@@ -35,10 +31,6 @@ public class ScriptServer extends Thread {
         }
     }
 
-
-    /**
-     * Delivers a message from one user to others (broadcasting)
-     */
     void broadcast(String message, User excludeUser, String sender) {
         for (Map.Entry<String, User> userPair : users.entrySet()) {
             if (userPair.getValue() != excludeUser) {
@@ -55,32 +47,11 @@ public class ScriptServer extends Thread {
         }
     }
 
-    String getChat() {
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(CHATFILE));
-            while (bufferedReader.readLine() != null) {
-                if (!bufferedReader.readLine().equals("null")) {
-                    stringBuilder.append(bufferedReader.readLine());
-                }
-            }
-            bufferedReader.close();
-        } catch (IOException e) {
-            print(e.getMessage());
-            e.printStackTrace();
-        }
-        return stringBuilder.toString();
-    }
-
-    void sendPacket(User user, Packet packet) {
+    public void sendPacket(User user, Packet packet) {
         user.send(packet.encode());
     }
 
-    void sendMessage(User user, String message) {
-        sendPacket(user, new PacketMessage(message));
-    }
-
-    String getUserNames() {
+    public String getUserNames() {
         ArrayList<String> names = new ArrayList<>();
         for (Map.Entry<String, User> userPair : users.entrySet()) {
             String userName = userPair.getValue().getUserName();
@@ -88,22 +59,22 @@ public class ScriptServer extends Thread {
                 names.add(userName);
             }
         }
-        return "Users: " + names;
+        return names.size() + " Users: " + names;
     }
 
     int getUserCount() {
         return users.size();
     }
 
-    void removeUserById(String id, String reason) {
+    public void removeUserById(String id, String reason) {
         sendPacket(users.get(id), new PacketDisconnect(reason));
         users.get(id).shutdown();
-        broadcast(new PacketQuit(users.get(id).getUserName() + " quit, " + getUserCount() + " people are online" ), null);
+        broadcast(new PacketLog(users.get(id).getUserName() + " quit, " + (getUserCount()  - 1) + " people are online" ), null);
         print("User disconnected: " + id);
         users.remove(id);
     }
 
-    User getUserByName(String name) {
+    public User getUserByName(String name) {
         User user = null;
         for (Map.Entry<String, User> userPair : users.entrySet()) {
             String userName = userPair.getValue().getUserName();
@@ -117,7 +88,7 @@ public class ScriptServer extends Thread {
         return user;
     }
 
-    boolean hasUserByName(String name) {
+    public boolean hasUserByName(String name) {
         return (getUserByName(name) != null);
     }
 
@@ -126,32 +97,10 @@ public class ScriptServer extends Thread {
         String ip = String.valueOf(socket.getInetAddress()).replace("/", "");
         int port = socket.getPort();
         String id = ip + PacketIds.SEPARATOR + port;
-        User newUser = new User(socket, this, id, Security.OPERATOR);
+        User newUser = new User(socket, this, id, Security.VISITOR);
         print("New user connected: " + id);
         users.put(id, newUser);
         newUser.start();
-    }
-
-    public void removeUserByName(String name, String reason) {
-        try {
-            for (Map.Entry<String, User> userPair : users.entrySet()) {
-                String userName = userPair.getValue().getUserName();
-                if (Objects.equals(userName, name)) {
-                    removeUserById(userPair.getKey(), reason);
-                }
-            }
-        } catch (Exception e) {
-            print(e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    public void removeUsers(User excludedUser, String reason){
-        for (Map.Entry<String, User> userPair : users.entrySet()) {
-            if (!(excludedUser == userPair.getValue())){
-                removeUserById(userPair.getKey(), reason);
-            }
-        }
     }
 
     public static void print(String message) {
@@ -171,7 +120,8 @@ public class ScriptServer extends Thread {
         }
     }
 
-    public CommandHandler getCommandHandler() {
-        return commandHandler;
+
+    public HashMap<String, User> getUsers() {
+        return users;
     }
 }

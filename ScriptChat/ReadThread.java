@@ -1,6 +1,6 @@
 import ScriptServer.packets.PacketDisconnect;
 import ScriptServer.packets.PacketIds;
-import ScriptServer.packets.PacketJoin;
+import ScriptServer.packets.PacketLog;
 import ScriptServer.packets.PacketMessage;
 
 import java.io.BufferedReader;
@@ -50,9 +50,13 @@ public class ReadThread extends Thread {
                         PacketDisconnect packetDisconnect = new PacketDisconnect(packet);
                         shutdownReason = packetDisconnect.REASON;
                         break loop;
-                    case PacketIds.JOIN:
-                        PacketJoin packetJoin = new PacketJoin(packet);
-                        UI.print("\nServer: " + packetJoin.MESSAGE);
+                    case PacketIds.LOG:
+                        PacketLog packetLog = new PacketLog(packet);
+                        if (packetLog.MESSAGE.startsWith("*/help")){
+                            UI.print("\nSystem:" + packetLog.MESSAGE.replace("*", "\n"));
+                        }else{
+                            UI.print("\nSystem: " + packetLog.MESSAGE);
+                        }
                 }
             } catch (IOException ex) {
                 UI.print("Error reading from server: " + ex.getMessage());

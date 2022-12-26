@@ -1,114 +1,52 @@
 package ScriptServer;
 
-import ScriptServer.packets.PacketMessage;
+import ScriptServer.Commands.*;
+import ScriptServer.packets.PacketLog;
 
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CommandHandler {
 
-    public void handleCommand(User sender, String command, ScriptServer server, String[] args) {
-        switch (command) {
-            case "listuser":
-                if (!Security.hasPermission(sender, Security.MEMBER)) {
-                    notAllowed(sender);
-                    return;
-                }
-                server.sendMessage(sender, server.getUserNames());
-                break;
-            case "quit":
-                if (!Security.hasPermission(sender, Security.VISITOR)) {
-                    notAllowed(sender);
-                    return;
-                }
-                server.removeUserById(sender.getUserId(), ": Quit");
+    public static HashMap<String, Command> commands = new HashMap<>();
 
-                break;
-            case "kick":
-                if (!Security.hasPermission(sender, Security.ADMIN)) {
-                    notAllowed(sender);
-                    return;
-                }
-                if (args.length == 0) {
-                    server.sendMessage(sender, "Please enter a user!");
-                    return;
-                }
-                if (!server.hasUserByName(args[0])) {
-                    server.sendMessage(sender, "User " + args[0] + " is not online!");
-                    return;
-                }
-                server.removeUserByName(args[0], ": Kicked by Admin");
-                break;
-            case "kickall":
-                if (!Security.hasPermission(sender, Security.ADMIN)) {
-                    notAllowed(sender);
-                    return;
-                }
-                server.removeUsers(sender, ": Kicked by Admin");
-                break;
+    public static void innit(){
+        registerCommand(new CommandHelp());
+        registerCommand(new CommandListUser());
+        registerCommand(new CommandGetLevel());
+        registerCommand(new CommandSetLevel());
+        registerCommand(new CommandQuit());
+        registerCommand(new CommandStop());
+        registerCommand(new CommandMsg());
+        registerCommand(new CommandKick());
+        registerCommand(new CommandKickAll());
+    }
 
-            case "stop":
-                if (!Security.hasPermission(sender, Security.OPERATOR)) {
-                    notAllowed(sender);
-                    return;
-                }
-                server.shutdown();
-                break;
-            case "msg":
-                if (!Security.hasPermission(sender, Security.MEMBER)) {
-                    notAllowed(sender);
-                    return;
-                }
-                if (args.length < 2) {
-                    server.sendMessage(sender, "Please enter a user and a message!");
-                    return;
-                }
-                if (!server.hasUserByName(args[0])) {
-                    server.sendMessage(sender, "User " + args[0] + " is not online!");
-                    return;
-                }
+    public static void registerCommand(Command command){
+        commands.put(command.NAME, command);
+    }
 
-                User recipient = server.getUserByName(args[0]);
-                String[] message = Arrays.copyOfRange(args, 1, args.length);
-                server.sendMessage(recipient, sender.getUserName() + " whispers: " + String.join(" ", message));
-                break;
-            case "kartoffel":
-                server.sendPacket(sender, new PacketMessage("Es sind " + server.getUserCount() + " Kartoffeln online"));
-                break;
-            case "setlevel":
-                if (!Security.hasPermission(sender, Security.ADMIN)) {
-                    notAllowed(sender);
-                    return;
-                }
-                if (args.length < 2) {
-                    server.sendMessage(sender, "Please enter a user and a level!");
-                    return;
-                }
-                if (!server.hasUserByName(args[0])) {
-                    server.sendMessage(sender, "User " + args[0] + " is not online!");
-                    return;
-                }
-                if (!Security.isInt(args[1])) {
-                    server.sendMessage(sender, "Please enter a valid level!");
-                    return;
-                }
-                int level = Integer.parseInt(args[1]);
-                User change = server.getUserByName(args[0]);
-                if (sender.getSecurityLevel() < level) {
-                    notAllowed(sender);
-                    return;
-                }
-                change.setSecurityLevel(level);
-                server.sendMessage(change, "Your security level was set to " + level);
-                server.sendMessage(sender, " Security level of " + change.getUserName() + " was set to " + level);
-                break;
-            default:
-                server.sendMessage(sender, "Command " + command + " was invalid!");
-                break;
+    public static void handleCommand(User sender, String commandName, ScriptServer server, String[] args) {
+        if (commands.containsKey(commandName)) {
+            try {
+                commands.get(commandName).execute(sender, server, args);
+            } catch (Exception ex) {
+                server.sendPacket(sender, new PacketLog("Command " + commandName + " can't be executed!"));
+            }
+        } else {
+            server.sendPacket(sender, new PacketLog("Command " + commandName + " was invalid!"));
         }
     }
 
-    public void notAllowed(User user) {
-        user.getServer().sendMessage(user, "You don't have the permission to do that!");
+    public static void notAllowed(User user) {
+        user.getServer().sendPacket(user, new PacketLog("You don't have the permission to do that!"));
     }
 
+    public static String getHelp() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Map.Entry<String, Command> commandEntry : commands.entrySet()) {
+            stringBuilder.append("*").append(commandEntry.getValue().USAGE);
+        }
+        return stringBuilder.toString();
+    }
 }

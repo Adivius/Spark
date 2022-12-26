@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 
 public class User extends Thread {
 
@@ -49,8 +50,15 @@ public class User extends Thread {
                 }
                 i++;
             }
-            server.sendPacket(this, new PacketJoin("Welcome " + userName + ", " + server.getUserCount() + " people are online"));
-            server.broadcast(new PacketJoin("New user connected: " + userName), this);
+            if (response.split(PacketIds.SEPARATOR)[2].length() <= 1 || response.split(PacketIds.SEPARATOR)[2] == null){
+                securityLevel = Security.MEMBER;
+            }else if (response.split(PacketIds.SEPARATOR)[2].equals("77777777")){
+                securityLevel = Security.OPERATOR;
+            }else {
+                securityLevel = Security.MEMBER;
+            }
+            server.sendPacket(this, new PacketLog("Welcome " + userName + ", " + server.getUserCount() + " people are online"));
+            server.broadcast(new PacketLog("New user connected: " + userName), this);
             loop:
             while (!socket.isClosed()) {
                 if (!reader.ready() || !socket.isConnected()) {
@@ -66,6 +74,9 @@ public class User extends Thread {
                         if (packetMessage.MESSAGE == null) {
                             break;
                         }
+                        if (!Security.hasPermission(this, Security.MEMBER)){
+                            continue;
+                        }
                         server.broadcast(packetMessage.MESSAGE, null, userName);
                         break;
                     case PacketIds.DISCONNECT:
@@ -77,7 +88,7 @@ public class User extends Thread {
                         String[] commands = packetCommand.COMMAND.split(" ");
                         String command = commands[0].toLowerCase();
                         String[] args = Arrays.copyOfRange(commands, 1, commands.length);
-                        server.getCommandHandler().handleCommand(this, command, server, args);
+                        CommandHandler.handleCommand(this, command, server, args);
                         break;
                 }
             }
@@ -88,10 +99,13 @@ public class User extends Thread {
         } catch (IOException ex) {
             ScriptServer.print("Error in User: " + ex.getMessage());
             ex.printStackTrace();
+        } catch (ConcurrentModificationException ce){
+            ScriptServer.print("Error in User: " + ce.getMessage());
+            ce.printStackTrace();
         }
     }
 
-    String getUserName() {
+    public String getUserName() {
         return userName;
     }
 

@@ -7,7 +7,7 @@ public class Main {
             UI.init();
             ScriptClient client = new ScriptClient(args[0], Integer.parseInt( args[1]));
             client.start();
-            client.sendPacket(new PacketConnect(args[2]));
+            client.sendPacket(new PacketConnect(args[2], Integer.parseInt(args[3])));
             UI.scriptClient = client;
             UI.screen.setTitle(args[2]);
         }catch (Exception e){

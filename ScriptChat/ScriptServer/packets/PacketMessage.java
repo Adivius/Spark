@@ -20,7 +20,7 @@ public class PacketMessage extends Packet{
 
     public PacketMessage(String[] str){
         super(PacketIds.MESSAGE);
-        if (str.length == 3){
+        if (str.length >= 3){
             this.MESSAGE = str[1];
             this.SENDER = str[2];
 
