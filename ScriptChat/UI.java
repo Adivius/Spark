@@ -1,16 +1,20 @@
+import ScriptServer.packets.PacketDisconnect;
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public abstract class UI {
     public static JFrame screen;
     public static JTextPane chatArea;
     public static JTextField messageArea;
     public static final int SCREEN_HEIGHT = 450, SCREEN_WIDTH = 800;
-    public static ChatClient chatClient;
+    public static ScriptClient scriptClient;
     public static JScrollPane scrollPane;
 
-    public static void init(){
+    public static void init() {
         screen = new JFrame("ScriptChat");
         screen.setLayout(new BorderLayout());
         screen.setLocationRelativeTo(null);
@@ -28,26 +32,25 @@ public abstract class UI {
         screen.add(scrollPane, BorderLayout.CENTER);
 
         messageArea = new JTextField();
-        messageArea.addActionListener(e -> sendMessage(messageArea.getText()));
+        messageArea.addActionListener(e -> scriptClient.prepareSendMessage(messageArea.getText()));
         messageArea.setBorder(new LineBorder(Color.DARK_GRAY, 1));
         messageArea.setMargin(new Insets(10, 10, 10, 10));
         messageArea.setPreferredSize(new Dimension(SCREEN_WIDTH, 50));
         screen.add(messageArea, BorderLayout.SOUTH);
         screen.setVisible(true);
         messageArea.requestFocusInWindow();
+
+        screen.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                scriptClient.sendPacket(new PacketDisconnect(": Disconnected!"));
+                scriptClient.shutdown(": You Disconnected!");
+            }
+        });
     }
 
-    public static void print(String message){
+    public static void print(String message) {
         scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
         chatArea.setText(chatArea.getText() + message + '\n');
-    }
-
-    public static void sendMessage(String message){
-        chatClient.getWriter().println(message);
-        messageArea.setText("");
-        if (message.equals("bye")){
-            chatClient.getReadThread().setConnected(false);
-            System.exit(0);
-        }
     }
 }

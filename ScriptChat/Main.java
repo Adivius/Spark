@@ -1,18 +1,17 @@
-public class Main {
+import ScriptServer.packets.PacketConnect;
 
-    public Main(String ip, int port){
-        UI.init();
-        ChatClient client = new ChatClient(ip, port);
-        client.start();
-        UI.chatClient = client;
-    }
+public class Main {
 
     public static void main(String[] args) {
         try {
-            Main main = new Main(args[0], Integer.parseInt( args[1]));
-        }catch (Exception e){
+            UI.init();
+            ScriptClient client = new ScriptClient(args[0], Integer.parseInt(args[1]));
+            client.start();
+            client.sendPacket(new PacketConnect(args[2], Integer.parseInt(args[3])));
+            UI.scriptClient = client;
+            UI.screen.setTitle(args[2]);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 }

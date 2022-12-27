@@ -1,18 +1,20 @@
+import ScriptServer.packets.Packet;
+import ScriptServer.packets.PacketMessage;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class ChatClient {
+public class ScriptClient {
     private final String ip;
     private PrintWriter writer;
     private Socket socket;
     private final int port;
-    private String userName;
     private ReadThread readThread;
 
-    public ChatClient(String ip, int port) {
+    public ScriptClient(String ip, int port) {
         this.ip = ip;
         this.port = port;
     }
@@ -21,12 +23,10 @@ public class ChatClient {
         try {
             socket = new Socket(ip, port);
             UI.print("Connected to the chat server on port " + port);
-
             readThread = new ReadThread(socket, this);
             readThread.start();
-
         } catch (UnknownHostException ex) {
-            UI.print("Server not found: " + ex.getMessage());
+            UI.print("ServerMain not found: " + ex.getMessage());
         } catch (IOException ex) {
             UI.print("I/O Error: " + ex.getMessage());
         }
@@ -41,19 +41,39 @@ public class ChatClient {
 
     }
 
-    void setUserName(String userName) {
-        this.userName = userName;
+    void shutdown(String reason) {
+        UI.print("Disconnected" + reason);
+        try {
+            readThread.shutdown();
+            writer.close();
+            socket.close();
+        } catch (IOException ex) {
+            UI.print("Error disconnecting: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
-    String getUserName() {
-        return this.userName;
+    void sendPacket(Packet packet) {
+        send(packet.encode());
+
     }
 
-    public ReadThread getReadThread() {
-        return readThread;
+    void send(String bytes) {
+        writer.println(bytes);
     }
 
-    public PrintWriter getWriter() {
-        return writer;
+    public void prepareSendMessage(String message) {
+        if (socket.isClosed()) {
+            return;
+        }
+        if (message.isEmpty()) {
+            return;
+        }
+        if (message.contains("~")) {
+            return;
+        }
+        sendPacket(new PacketMessage(message));
+        UI.messageArea.setText("");
     }
+
 }
