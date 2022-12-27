@@ -1,4 +1,4 @@
-package ScriptServer.Commands;
+package ScriptServer.commands;
 
 import ScriptServer.ScriptServer;
 import ScriptServer.User;

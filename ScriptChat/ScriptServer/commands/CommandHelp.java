@@ -1,7 +1,8 @@
-package ScriptServer.Commands;
+package ScriptServer.commands;
 
 import ScriptServer.CommandHandler;
 import ScriptServer.ScriptServer;
+import ScriptServer.Security;
 import ScriptServer.User;
 import ScriptServer.packets.PacketLog;
 
@@ -9,7 +10,7 @@ public class CommandHelp extends Command {
 
 
     public CommandHelp() {
-        super("help", "/help <?command>", 0, 1);
+        super("help", "/help <?command>", 0, Security.VISITOR);
     }
 
     @Override

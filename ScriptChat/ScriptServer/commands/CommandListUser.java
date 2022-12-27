@@ -1,12 +1,13 @@
-package ScriptServer.Commands;
+package ScriptServer.commands;
 
 import ScriptServer.ScriptServer;
+import ScriptServer.Security;
 import ScriptServer.User;
 import ScriptServer.packets.PacketLog;
 
-public class CommandListUser extends Command{
+public class CommandListUser extends Command {
     public CommandListUser() {
-        super("listuser", "/listuser", 0, 1);
+        super("listuser", "/listuser", 0, Security.MEMBER);
     }
 
     @Override

@@ -1,16 +1,17 @@
-package ScriptServer.Commands;
+package ScriptServer.commands;
 
 import ScriptServer.ScriptServer;
+import ScriptServer.Security;
 import ScriptServer.User;
 import ScriptServer.packets.PacketLog;
 import ScriptServer.packets.PacketMessage;
 
 import java.util.Arrays;
 
-public class CommandMsg extends Command{
+public class CommandMsg extends Command {
 
-    public CommandMsg(){
-        super("msg", "/msg <name> <message>", 2, 1);
+    public CommandMsg() {
+        super("msg", "/msg <name> <message>", 2, Security.MEMBER);
     }
 
     @Override

@@ -1,6 +1,9 @@
 package ScriptServer;
 
-import ScriptServer.packets.*;
+import ScriptServer.packets.PacketDisconnect;
+import ScriptServer.packets.PacketIds;
+import ScriptServer.packets.PacketLog;
+import ScriptServer.packets.PacketMessage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,24 +42,30 @@ public class User extends Thread {
             do {
                 response = reader.readLine();
             } while (response == null);
-            ScriptServer.print(response);
-            int i = 0;
-            String name;
-            while (true){
-                name = response.split(PacketIds.SEPARATOR)[1];
-                if (!server.hasUserByName(name + ((i == 0) ? "" : Integer.toString(i)))){
-                    userName = name + ((i == 0) ? "" : i);
-                    break;
-                }
-                i++;
+            String[] connectPacket = response.split(PacketIds.SEPARATOR);
+            if (!connectPacket[0].equals(Integer.toString(PacketIds.CONNECT))) {
+                server.removeUserById(this.getUserId(), ": Invalid connect!");
+                return;
             }
-            if (response.split(PacketIds.SEPARATOR)[2].length() <= 1 || response.split(PacketIds.SEPARATOR)[2] == null){
-                securityLevel = Security.MEMBER;
-            }else if (response.split(PacketIds.SEPARATOR)[2].equals("77777777")){
-                securityLevel = Security.OPERATOR;
-            }else {
-                securityLevel = Security.MEMBER;
+            if (connectPacket.length == 1) {
+                server.removeUserById(this.getUserId(), ": Invalid name!");
+                return;
             }
+            String name = connectPacket[1].toLowerCase();
+            if (server.hasUserByName(name)) {
+                server.removeUserById(this.getUserId(), ": Invalid name!");
+                return;
+            }
+            if (!Security.nameAllowed(name)) {
+                server.removeUserById(this.getUserId(), ": Invalid name!");
+                return;
+            }
+            int level = Security.MEMBER;
+            if (connectPacket.length > 2) {
+                level = Security.switchLevel(this, connectPacket[2]);
+            }
+            setUserName(name);
+            setSecurityLevel(level);
             server.sendPacket(this, new PacketLog("Welcome " + userName + ", " + server.getUserCount() + " people are online"));
             server.broadcast(new PacketLog("New user connected: " + userName), this);
             loop:
@@ -71,10 +80,17 @@ public class User extends Thread {
                 switch (packetID) {
                     case PacketIds.MESSAGE:
                         PacketMessage packetMessage = new PacketMessage(packet);
-                        if (packetMessage.MESSAGE == null) {
+                        if (packetMessage.MESSAGE == null || packetMessage.MESSAGE.isEmpty()) {
                             break;
                         }
-                        if (!Security.hasPermission(this, Security.MEMBER)){
+                        if (packetMessage.MESSAGE.startsWith("/")) {
+                            String[] commands = packetMessage.MESSAGE.split(" ");
+                            String command = commands[0].toLowerCase().substring(1);
+                            String[] args = Arrays.copyOfRange(commands, 1, commands.length);
+                            CommandHandler.handleCommand(this, command, server, args);
+                            break;
+                        }
+                        if (!Security.hasPermission(this, Security.MEMBER)) {
                             continue;
                         }
                         server.broadcast(packetMessage.MESSAGE, null, userName);
@@ -83,25 +99,15 @@ public class User extends Thread {
                         PacketDisconnect packetDisconnect = new PacketDisconnect(packet);
                         disconnectReason = packetDisconnect.REASON;
                         break loop;
-                    case PacketIds.COMMAND:
-                        PacketCommand packetCommand = new PacketCommand(packet);
-                        String[] commands = packetCommand.COMMAND.split(" ");
-                        String command = commands[0].toLowerCase();
-                        String[] args = Arrays.copyOfRange(commands, 1, commands.length);
-                        CommandHandler.handleCommand(this, command, server, args);
-                        break;
                 }
             }
             if (!socket.isClosed()) {
                 server.removeUserById(id, disconnectReason);
             }
 
-        } catch (IOException ex) {
+        } catch (IOException | ConcurrentModificationException ex) {
             ScriptServer.print("Error in User: " + ex.getMessage());
             ex.printStackTrace();
-        } catch (ConcurrentModificationException ce){
-            ScriptServer.print("Error in User: " + ce.getMessage());
-            ce.printStackTrace();
         }
     }
 
@@ -109,9 +115,6 @@ public class User extends Thread {
         return userName;
     }
 
-    /**
-     * Sends a message to the client.
-     */
     void send(String bytes) {
         writer.println(bytes);
     }
@@ -144,5 +147,9 @@ public class User extends Thread {
 
     public void setSecurityLevel(int securityLevel) {
         this.securityLevel = securityLevel;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

@@ -1,12 +1,13 @@
-package ScriptServer.Commands;
+package ScriptServer.commands;
 
 import ScriptServer.ScriptServer;
+import ScriptServer.Security;
 import ScriptServer.User;
 
-public class CommandQuit extends Command {
+public class CommandStop extends Command {
 
-    public CommandQuit() {
-        super("quit", "/quit", 0, 0);
+    public CommandStop() {
+        super("stop", "/stop", 0, Security.OPERATOR);
     }
 
     @Override
@@ -15,7 +16,7 @@ public class CommandQuit extends Command {
             notAllowed(user);
             return false;
         }
-        server.removeUserById(user.getUserId(), ": Quit");
+        server.shutdown();
         return true;
     }
 }

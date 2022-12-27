@@ -1,13 +1,14 @@
-package ScriptServer.Commands;
+package ScriptServer.commands;
 
 import ScriptServer.ScriptServer;
+import ScriptServer.Security;
 import ScriptServer.User;
 import ScriptServer.packets.PacketLog;
 
 public class CommandGetLevel extends Command {
 
     public CommandGetLevel() {
-        super("getlevel", "/getlevel <?name>", 0, 1);
+        super("getlevel", "/getlevel <?name>", 0, Security.MEMBER);
     }
 
     @Override

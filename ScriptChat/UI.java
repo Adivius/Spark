@@ -14,7 +14,7 @@ public abstract class UI {
     public static ScriptClient scriptClient;
     public static JScrollPane scrollPane;
 
-    public static void init(){
+    public static void init() {
         screen = new JFrame("ScriptChat");
         screen.setLayout(new BorderLayout());
         screen.setLocationRelativeTo(null);
@@ -43,13 +43,13 @@ public abstract class UI {
         screen.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                scriptClient.sendPacket(new PacketDisconnect());
-                scriptClient.shutdown(": You quit!");
+                scriptClient.sendPacket(new PacketDisconnect(": Disconnected!"));
+                scriptClient.shutdown(": You Disconnected!");
             }
         });
     }
 
-    public static void print(String message){
+    public static void print(String message) {
         scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
         chatArea.setText(chatArea.getText() + message + '\n');
     }

@@ -3,9 +3,9 @@ package ScriptServer;
 public class ServerMain {
 
     public static void main(String[] args) {
-        try{
+        try {
             new ScriptServer(Integer.parseInt(args[0])).start();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

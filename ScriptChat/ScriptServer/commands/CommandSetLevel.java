@@ -1,4 +1,4 @@
-package ScriptServer.Commands;
+package ScriptServer.commands;
 
 import ScriptServer.ScriptServer;
 import ScriptServer.Security;
@@ -8,7 +8,7 @@ import ScriptServer.packets.PacketLog;
 public class CommandSetLevel extends Command {
 
     public CommandSetLevel() {
-        super("setlevel", "/setlevel <name> <level>", 2, 2);
+        super("setlevel", "/setlevel <name> <level>", 2, Security.ADMIN);
     }
 
     @Override

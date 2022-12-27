@@ -1,6 +1,6 @@
 package ScriptServer;
 
-import ScriptServer.Commands.*;
+import ScriptServer.commands.*;
 import ScriptServer.packets.PacketLog;
 
 import java.util.HashMap;
@@ -10,7 +10,7 @@ public class CommandHandler {
 
     public static HashMap<String, Command> commands = new HashMap<>();
 
-    public static void innit(){
+    public static void init() {
         registerCommand(new CommandHelp());
         registerCommand(new CommandListUser());
         registerCommand(new CommandGetLevel());
@@ -22,7 +22,7 @@ public class CommandHandler {
         registerCommand(new CommandKickAll());
     }
 
-    public static void registerCommand(Command command){
+    public static void registerCommand(Command command) {
         commands.put(command.NAME, command);
     }
 
@@ -32,14 +32,11 @@ public class CommandHandler {
                 commands.get(commandName).execute(sender, server, args);
             } catch (Exception ex) {
                 server.sendPacket(sender, new PacketLog("Command " + commandName + " can't be executed!"));
+                ex.printStackTrace();
             }
         } else {
             server.sendPacket(sender, new PacketLog("Command " + commandName + " was invalid!"));
         }
-    }
-
-    public static void notAllowed(User user) {
-        user.getServer().sendPacket(user, new PacketLog("You don't have the permission to do that!"));
     }
 
     public static String getHelp() {

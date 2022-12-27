@@ -1,5 +1,4 @@
 import ScriptServer.packets.Packet;
-import ScriptServer.packets.PacketCommand;
 import ScriptServer.packets.PacketMessage;
 
 import java.io.IOException;
@@ -42,7 +41,7 @@ public class ScriptClient {
 
     }
 
-    void shutdown(String reason){
+    void shutdown(String reason) {
         UI.print("Disconnected" + reason);
         try {
             readThread.shutdown();
@@ -54,31 +53,26 @@ public class ScriptClient {
         }
     }
 
-    void sendPacket(Packet packet){
+    void sendPacket(Packet packet) {
         send(packet.encode());
 
     }
 
-    void send(String bytes){
+    void send(String bytes) {
         writer.println(bytes);
     }
 
-    public void prepareSendMessage(String message){
-        if (socket.isClosed()){
+    public void prepareSendMessage(String message) {
+        if (socket.isClosed()) {
             return;
         }
-        if (message.isEmpty()){
+        if (message.isEmpty()) {
             return;
         }
-        if (message.contains("~")){
+        if (message.contains("~")) {
             return;
         }
-        if (message.startsWith("/")){
-            String command = message.substring(1);
-            sendPacket(new PacketCommand(command));
-        }else {
-            sendPacket(new PacketMessage(message));
-        }
+        sendPacket(new PacketMessage(message));
         UI.messageArea.setText("");
     }
 

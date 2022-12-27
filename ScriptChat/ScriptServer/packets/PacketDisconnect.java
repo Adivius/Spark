@@ -9,9 +9,9 @@ public class PacketDisconnect extends Packet {
         this.REASON = null;
     }
 
-    public PacketDisconnect(String str) {
+    public PacketDisconnect(String reason) {
         super(PacketIds.DISCONNECT);
-        this.REASON = str;
+        this.REASON = reason;
     }
 
     public PacketDisconnect(String[] str) {

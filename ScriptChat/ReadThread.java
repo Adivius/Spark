@@ -52,9 +52,9 @@ public class ReadThread extends Thread {
                         break loop;
                     case PacketIds.LOG:
                         PacketLog packetLog = new PacketLog(packet);
-                        if (packetLog.MESSAGE.startsWith("*/help")){
+                        if (packetLog.MESSAGE.startsWith("*/help")) {
                             UI.print("\nSystem:" + packetLog.MESSAGE.replace("*", "\n"));
-                        }else{
+                        } else {
                             UI.print("\nSystem: " + packetLog.MESSAGE);
                         }
                 }
