@@ -4,6 +4,7 @@ public abstract class Security {
 
     public static int VISITOR = 0, MEMBER = 1, ADMIN = 2, OPERATOR = 3;
     public static String[] FORBIDDEN_NAMES = {"system", "server", "operator", "admin", "penis", "console"};
+    public static String STANDARD_SENDER = "System";
 
     public static boolean hasPermission(User user, int minSecurityLevel) {
         return user.getSecurityLevel() >= minSecurityLevel;

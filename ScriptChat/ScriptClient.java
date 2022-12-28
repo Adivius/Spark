@@ -13,6 +13,7 @@ public class ScriptClient {
     private Socket socket;
     private final int port;
     private ReadThread readThread;
+    private String userName;
 
     public ScriptClient(String ip, int port) {
         this.ip = ip;
@@ -74,6 +75,11 @@ public class ScriptClient {
         }
         sendPacket(new PacketMessage(message));
         UI.messageArea.setText("");
+    }
+
+    public void setUserName(String userName){
+        this.userName = userName;
+        UI.screen.setTitle(userName);
     }
 
 }

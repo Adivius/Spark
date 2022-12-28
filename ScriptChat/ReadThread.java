@@ -1,7 +1,4 @@
-import ScriptServer.packets.PacketDisconnect;
-import ScriptServer.packets.PacketIds;
-import ScriptServer.packets.PacketLog;
-import ScriptServer.packets.PacketMessage;
+import ScriptServer.packets.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,6 +54,13 @@ public class ReadThread extends Thread {
                         } else {
                             UI.print("\nSystem: " + packetLog.MESSAGE);
                         }
+                        break;
+                    case PacketIds.NAME:
+                        PacketName packetName = new PacketName(packet);
+                        if (!packetName.NAME.isEmpty()){
+                            client.setUserName(packetName.NAME);
+                        }
+                        break;
                 }
             } catch (IOException ex) {
                 UI.print("Error reading from server: " + ex.getMessage());
@@ -74,5 +78,4 @@ public class ReadThread extends Thread {
         reader.close();
         this.interrupt();
     }
-
 }

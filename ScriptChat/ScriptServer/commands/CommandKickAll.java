@@ -1,9 +1,7 @@
 package ScriptServer.commands;
 
-import ScriptServer.ScriptServer;
 import ScriptServer.Security;
 import ScriptServer.User;
-import ScriptServer.packets.PacketLog;
 
 public class CommandKickAll extends Command {
 
@@ -12,18 +10,18 @@ public class CommandKickAll extends Command {
     }
 
     @Override
-    public boolean execute(User user, ScriptServer server, String[] args) {
+    public boolean execute(User user, String[] args) {
         if (!hasPermission(user, SECURITYLEVEL)) {
             notAllowed(user);
             return false;
         }
         try {
-            for (String id : server.getUsers().keySet()) {
+            for (String id : user.getServer() .getUsers().keySet()) {
                 if (!(id.equals(user.getUserId()))) {
-                    server.removeUserById(id, ": Kicked by Admin");
+                    user.getServer().removeUserById(id, ": Kicked by Admin");
                 }
             }
-            server.sendPacket(user, new PacketLog(""));
+            user.sendLog("Kicked all user!");
             return true;
         } catch (Exception e) {
             return false;

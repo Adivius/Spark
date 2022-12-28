@@ -11,12 +11,12 @@ public class CommandQuit extends Command {
     }
 
     @Override
-    public boolean execute(User user, ScriptServer server, String[] args) {
+    public boolean execute(User user, String[] args) {
         if (!hasPermission(user, SECURITYLEVEL)) {
             notAllowed(user);
             return false;
         }
-        server.removeUserById(user.getUserId(), ": Quit");
+        user.getServer().removeUserById(user.getUserId(), ": Quit");
         return true;
     }
 }

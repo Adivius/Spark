@@ -8,24 +8,24 @@ import ScriptServer.packets.PacketLog;
 public class CommandKick extends Command {
 
     public CommandKick() {
-        super("kick", "/kick <name>", 1, Security.ADMIN);
+        super("kick", "/kick <username>", 1, Security.ADMIN);
     }
 
     @Override
-    public boolean execute(User user, ScriptServer server, String[] args) {
+    public boolean execute(User user, String[] args) {
         if (!hasPermission(user, SECURITYLEVEL)) {
             notAllowed(user);
             return false;
         }
         if (args.length < ARGSLENGHT) {
-            server.sendPacket(user, new PacketLog("Please enter a user!"));
+            user.sendLog("Please enter a user!");
             return false;
         }
-        if (!server.hasUserByName(args[0])) {
-            server.sendPacket(user, new PacketLog("User " + args[0] + " is not online!"));
+        if (!user.getServer().hasUserByName(args[0])) {
+            user.sendLog("User " + args[0] + " is not online!");
             return false;
         }
-        server.removeUserById(server.getUserByName(args[0]).getUserId(), ": Kicked by Admin");
+        user.getServer().removeUserById(user.getServer().getUserByName(args[0]).getUserId(), ": Kicked by Admin");
         return false;
     }
 }

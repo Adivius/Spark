@@ -3,10 +3,9 @@ package ScriptServer.commands;
 import ScriptServer.Security;
 import ScriptServer.User;
 
-public class CommandStop extends Command {
-
-    public CommandStop() {
-        super("stop", "/stop", 0, Security.OPERATOR);
+public class CommandList extends Command {
+    public CommandList() {
+        super("list", "/list", 0, Security.MEMBER);
     }
 
     @Override
@@ -15,7 +14,7 @@ public class CommandStop extends Command {
             notAllowed(user);
             return false;
         }
-        user.getServer().shutdown();
+        user.sendLog(user.getServer().getUserNames());
         return true;
     }
 }
