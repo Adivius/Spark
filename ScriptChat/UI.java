@@ -7,10 +7,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public abstract class UI {
+    public static final int SCREEN_HEIGHT = 450, SCREEN_WIDTH = 800;
     public static JFrame screen;
     public static JTextPane chatArea;
     public static JTextField messageArea;
-    public static final int SCREEN_HEIGHT = 450, SCREEN_WIDTH = 800;
     public static ScriptClient scriptClient;
     public static JScrollPane scrollPane;
 
@@ -43,7 +43,7 @@ public abstract class UI {
         screen.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                scriptClient.sendPacket(new PacketDisconnect(": Disconnected!"));
+                scriptClient.sendPacket(new PacketDisconnect("Disconnect"));
                 scriptClient.shutdown(": You Disconnected!");
             }
         });
@@ -51,6 +51,6 @@ public abstract class UI {
 
     public static void print(String message) {
         scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
-        chatArea.setText(chatArea.getText() + message + '\n');
+        chatArea.setText(chatArea.getText() + message + "\n\n");
     }
 }

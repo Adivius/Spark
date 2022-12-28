@@ -10,7 +10,7 @@ public class CommandGetLevel extends Command {
 
     @Override
     public boolean execute(User user, String[] args) {
-        if (!hasPermission(user, SECURITYLEVEL)) {
+        if (!hasPermission(user, SECURITY_LEVEL)) {
             notAllowed(user);
             return false;
         }

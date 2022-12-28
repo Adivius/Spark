@@ -12,12 +12,12 @@ import java.util.ConcurrentModificationException;
 
 public class User extends Thread {
 
-    private PrintWriter writer;
-    private BufferedReader reader;
-    private String userName = null;
     private final ScriptServer server;
     private final Socket socket;
     private final String id;
+    private PrintWriter writer;
+    private BufferedReader reader;
+    private String userName = null;
     private int securityLevel;
     private String disconnectReason = null;
 
@@ -42,20 +42,20 @@ public class User extends Thread {
             System.out.println(response);
             String[] connectPacket = response.split(PacketIds.SEPARATOR);
             if (!connectPacket[0].equals(Integer.toString(PacketIds.CONNECT))) {
-                server.removeUserById(this.getUserId(), ": Invalid connect!");
+                server.removeUserById(this.getUserId(), "Invalid connect!");
                 return;
             }
             if (connectPacket.length == 1) {
-                server.removeUserById(this.getUserId(), ": Invalid name!");
+                server.removeUserById(this.getUserId(), "Invalid name!");
                 return;
             }
             String name = connectPacket[1].toLowerCase();
             if (server.hasUserByName(name)) {
-                server.removeUserById(this.getUserId(), ": Name is occupied!");
+                server.removeUserById(this.getUserId(), "Name is occupied!");
                 return;
             }
-            if (!Security.nameAllowed(name)) {
-                server.removeUserById(this.getUserId(), ": Name is blocked!");
+            if (Security.nameDenied(name)) {
+                server.removeUserById(this.getUserId(), "Name is blocked!");
                 return;
             }
             int level = Security.MEMBER;
@@ -73,12 +73,12 @@ public class User extends Thread {
                 }
                 response = reader.readLine();
                 ScriptServer.print(response);
-                if (response == null){
+                if (response == null) {
                     ScriptServer.print("Response was null");
                     continue;
                 }
                 String[] packet = response.split(PacketIds.SEPARATOR);
-                if (!Security.isInt(packet[0])){
+                if (Security.isInvalidInt(packet[0])) {
                     ScriptServer.print("Invalid packet ID: " + packet[0]);
                     continue;
                 }
@@ -139,12 +139,12 @@ public class User extends Thread {
         send(packet.encode());
     }
 
-    public void sendMessage(String message, String sender){
+    public void sendMessage(String message, String sender) {
         String username = sender.isEmpty() ? "System" : sender;
-        sendPacket(new PacketMessage(message, sender));
+        sendPacket(new PacketMessage(message, username));
     }
 
-    public void sendLog(String log){
+    public void sendLog(String log) {
         sendPacket(new PacketLog(log));
     }
 

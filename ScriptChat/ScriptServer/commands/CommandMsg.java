@@ -2,7 +2,6 @@ package ScriptServer.commands;
 
 import ScriptServer.Security;
 import ScriptServer.User;
-import ScriptServer.packets.PacketMessage;
 
 import java.util.Arrays;
 
@@ -14,11 +13,11 @@ public class CommandMsg extends Command {
 
     @Override
     public boolean execute(User user, String[] args) {
-        if (!hasPermission(user, SECURITYLEVEL)) {
+        if (!hasPermission(user, SECURITY_LEVEL)) {
             notAllowed(user);
             return false;
         }
-        if (args.length < ARGSLENGHT) {
+        if (args.length < ARGS_LENGTH) {
             user.sendLog("Please enter a user and a message!");
             return false;
         }

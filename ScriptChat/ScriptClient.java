@@ -1,4 +1,5 @@
 import ScriptServer.packets.Packet;
+import ScriptServer.packets.PacketConnect;
 import ScriptServer.packets.PacketMessage;
 
 import java.io.IOException;
@@ -8,19 +9,13 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class ScriptClient {
-    private final String ip;
     private PrintWriter writer;
     private Socket socket;
-    private final int port;
     private ReadThread readThread;
     private String userName;
 
-    public ScriptClient(String ip, int port) {
-        this.ip = ip;
-        this.port = port;
-    }
 
-    public void start() {
+    public void start(String ip, int port, String name, int securityCode) {
         try {
             socket = new Socket(ip, port);
             UI.print("Connected to the chat server on port " + port);
@@ -39,10 +34,15 @@ public class ScriptClient {
             UI.print("Error getting output stream: " + ex.getMessage());
             ex.printStackTrace();
         }
-
+        try {
+            sendPacket(new PacketConnect(name, securityCode));
+        } catch (Exception ex) {
+            UI.print("Error sending connect Packet: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
-    void shutdown(String reason) {
+    public void shutdown(String reason) {
         UI.print("Disconnected" + reason);
         try {
             readThread.shutdown();
@@ -77,9 +77,12 @@ public class ScriptClient {
         UI.messageArea.setText("");
     }
 
-    public void setUserName(String userName){
+    public void setUserName(String userName) {
         this.userName = userName;
         UI.screen.setTitle(userName);
     }
 
+    public String getUserName() {
+        return userName;
+    }
 }

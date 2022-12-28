@@ -11,11 +11,11 @@ public class CommandSetLevel extends Command {
 
     @Override
     public boolean execute(User user, String[] args) {
-        if (!hasPermission(user, SECURITYLEVEL)) {
+        if (!hasPermission(user, SECURITY_LEVEL)) {
             notAllowed(user);
             return false;
         }
-        if (args.length < ARGSLENGHT) {
+        if (args.length < ARGS_LENGTH) {
             user.sendLog("Please enter a user and a level!");
             return false;
         }
@@ -23,7 +23,7 @@ public class CommandSetLevel extends Command {
             user.sendLog("User " + args[0] + " is not online!");
             return false;
         }
-        if (!Security.isInt(args[1])) {
+        if (Security.isInvalidInt(args[1])) {
             user.sendLog("Please enter a valid level!");
             return false;
         }
@@ -36,8 +36,8 @@ public class CommandSetLevel extends Command {
             return false;
         }
         change.setSecurityLevel(level);
-        change.sendLog("Your security level was set to \" + level");
-        user.sendLog(" Security level of " + change.getUserName() + " was set to " + level);
+        change.sendLog("Your security level was set to: " + level);
+        user.sendLog("Security level of " + change.getUserName() + " was set to " + level);
         return true;
     }
 }

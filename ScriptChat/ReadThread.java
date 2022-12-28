@@ -7,9 +7,9 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 
 public class ReadThread extends Thread {
+    private final Socket socket;
     private BufferedReader reader;
     private ScriptClient client;
-    private Socket socket;
 
     public ReadThread(Socket socket, ScriptClient client) {
         this.socket = socket;
@@ -41,7 +41,7 @@ public class ReadThread extends Thread {
                 switch (packetID) {
                     case PacketIds.MESSAGE:
                         PacketMessage packetMessage = new PacketMessage(packet);
-                        UI.print("\n[" + packetMessage.SENDER + "]: " + packetMessage.MESSAGE);
+                        UI.print("[" + packetMessage.SENDER + "]: " + packetMessage.MESSAGE);
                         break;
                     case PacketIds.DISCONNECT:
                         PacketDisconnect packetDisconnect = new PacketDisconnect(packet);
@@ -49,15 +49,14 @@ public class ReadThread extends Thread {
                         break loop;
                     case PacketIds.LOG:
                         PacketLog packetLog = new PacketLog(packet);
-                        if (packetLog.MESSAGE.startsWith("*/help")) {
-                            UI.print("\nSystem:" + packetLog.MESSAGE.replace("*", "\n"));
-                        } else {
-                            UI.print("\nSystem: " + packetLog.MESSAGE);
+                        if (packetLog.MESSAGE.isEmpty()) {
+                            continue;
                         }
+                        UI.print("System: " + packetLog.MESSAGE);
                         break;
                     case PacketIds.NAME:
                         PacketName packetName = new PacketName(packet);
-                        if (!packetName.NAME.isEmpty()){
+                        if (!packetName.NAME.isEmpty()) {
                             client.setUserName(packetName.NAME);
                         }
                         break;

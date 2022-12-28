@@ -13,7 +13,7 @@ public class CommandName extends Command {
 
     @Override
     public boolean execute(User user, String[] args) {
-        if (!hasPermission(user, SECURITYLEVEL)) {
+        if (!hasPermission(user, SECURITY_LEVEL)) {
             notAllowed(user);
             return false;
         }
@@ -27,7 +27,7 @@ public class CommandName extends Command {
             user.sendLog("This name is occupied!");
             return false;
         }
-        if (!Security.nameAllowed(newName)) {
+        if (Security.nameDenied(newName)) {
             user.sendLog("This name is blocked!");
             return false;
         }

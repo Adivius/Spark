@@ -1,9 +1,7 @@
 package ScriptServer.commands;
 
-import ScriptServer.ScriptServer;
 import ScriptServer.Security;
 import ScriptServer.User;
-import ScriptServer.packets.PacketLog;
 
 public class CommandKick extends Command {
 
@@ -13,11 +11,11 @@ public class CommandKick extends Command {
 
     @Override
     public boolean execute(User user, String[] args) {
-        if (!hasPermission(user, SECURITYLEVEL)) {
+        if (!hasPermission(user, SECURITY_LEVEL)) {
             notAllowed(user);
             return false;
         }
-        if (args.length < ARGSLENGHT) {
+        if (args.length < ARGS_LENGTH) {
             user.sendLog("Please enter a user!");
             return false;
         }
@@ -25,7 +23,7 @@ public class CommandKick extends Command {
             user.sendLog("User " + args[0] + " is not online!");
             return false;
         }
-        user.getServer().removeUserById(user.getServer().getUserByName(args[0]).getUserId(), ": Kicked by Admin");
+        user.getServer().removeUserById(user.getServer().getUserByName(args[0]).getUserId(), "Kicked by Admin");
         return false;
     }
 }

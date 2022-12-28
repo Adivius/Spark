@@ -4,26 +4,25 @@ public abstract class Security {
 
     public static int VISITOR = 0, MEMBER = 1, ADMIN = 2, OPERATOR = 3;
     public static String[] FORBIDDEN_NAMES = {"system", "server", "operator", "admin", "penis", "console"};
-    public static String STANDARD_SENDER = "System";
 
     public static boolean hasPermission(User user, int minSecurityLevel) {
         return user.getSecurityLevel() >= minSecurityLevel;
     }
 
-    public static boolean isInt(String str) {
+    public static boolean isInvalidInt(String str) {
         try {
-            int x = Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
+            Integer.parseInt(str);
             return false;
+        } catch (NumberFormatException e) {
+            return true;
         }
     }
 
-    public static boolean nameAllowed(String name) {
-        boolean out = true;
+    public static boolean nameDenied(String name) {
+        boolean out = false;
         for (String forbiddenName : FORBIDDEN_NAMES) {
             if (name.toLowerCase().contains(forbiddenName)) {
-                out = false;
+                out = true;
                 break;
             }
         }
@@ -31,8 +30,8 @@ public abstract class Security {
     }
 
     public static int switchLevel(User user, String levelString) {
-        if (!isInt(levelString)) {
-            user.getServer().removeUserById(user.getUserId(), ": Invalid level!");
+        if (isInvalidInt(levelString)) {
+            user.getServer().removeUserById(user.getUserId(), "Invalid level!");
             return VISITOR;
         }
         int level = Integer.parseInt(levelString);
