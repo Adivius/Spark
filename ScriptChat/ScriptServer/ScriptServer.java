@@ -33,25 +33,23 @@ public class ScriptServer extends Thread {
         }
     }
 
-    void broadcast(String message, User excludeUser, String sender) {
+    public void broadcast(String message, User excludeUser, String sender) {
         for (Map.Entry<String, User> userPair : users.entrySet()) {
             if (userPair.getValue() != excludeUser) {
-                sendPacket(userPair.getValue(), new PacketMessage(message, sender));
+                userPair.getValue().sendMessage(message, sender);
             }
         }
     }
 
-    void broadcast(Packet packet, User excludeUser) {
+    public void broadcast(Packet packet, User excludeUser) {
         for (Map.Entry<String, User> userPair : users.entrySet()) {
             if (userPair.getValue() != excludeUser) {
-                sendPacket(userPair.getValue(), packet);
+                userPair.getValue().sendPacket(packet);
             }
         }
     }
 
-    public void sendPacket(User user, Packet packet) {
-        user.send(packet.encode());
-    }
+
 
     public String getUserNames() {
         ArrayList<String> names = new ArrayList<>();
@@ -69,9 +67,12 @@ public class ScriptServer extends Thread {
     }
 
     public void removeUserById(String id, String reason) {
-        sendPacket(users.get(id), new PacketDisconnect(reason));
-        users.get(id).shutdown();
-        broadcast(new PacketLog(users.get(id).getUserName() + " quit, " + (getUserCount() - 1) + " people are online"), null);
+        User removeUser = users.get(id);
+        if (removeUser.getUserName() != null){
+            broadcast(new PacketLog(removeUser.getUserName() + " quit, " + (getUserCount() - 1) + " people are online"), removeUser);
+        }
+        removeUser.sendPacket(new PacketDisconnect(reason));
+        removeUser.shutdown();
         print("User disconnected: " + id + reason);
         users.remove(id);
     }

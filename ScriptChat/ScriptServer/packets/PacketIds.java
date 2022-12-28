@@ -6,4 +6,5 @@ public class PacketIds {
     public static final int DISCONNECT = 2;
     public static final int LOG = 3;
     public static final int MESSAGE = 4;
+    public static final int NAME = 5;
 }

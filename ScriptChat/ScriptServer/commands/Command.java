@@ -2,7 +2,6 @@ package ScriptServer.commands;
 
 import ScriptServer.ScriptServer;
 import ScriptServer.User;
-import ScriptServer.packets.PacketLog;
 
 public abstract class Command {
     public String USAGE;
@@ -18,13 +17,13 @@ public abstract class Command {
         this.SECURITYLEVEL = securityLevel;
     }
 
-    public abstract boolean execute(User user, ScriptServer server, String[] args);
+    public abstract boolean execute(User user, String[] args);
 
     public boolean hasPermission(User user, int minSecurityLevel){
         return minSecurityLevel <= user.getSecurityLevel();
     }
 
     public void notAllowed(User user) {
-        user.getServer().sendPacket(user, new PacketLog("You don't have the permission to do that!"));
+        user.sendLog("You don't have the permission to do that!");
     }
 }

@@ -1,9 +1,6 @@
 package ScriptServer;
 
-import ScriptServer.packets.PacketDisconnect;
-import ScriptServer.packets.PacketIds;
-import ScriptServer.packets.PacketLog;
-import ScriptServer.packets.PacketMessage;
+import ScriptServer.packets.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +14,7 @@ public class User extends Thread {
 
     private PrintWriter writer;
     private BufferedReader reader;
-    private String userName;
+    private String userName = null;
     private final ScriptServer server;
     private final Socket socket;
     private final String id;
@@ -42,6 +39,7 @@ public class User extends Thread {
             do {
                 response = reader.readLine();
             } while (response == null);
+            System.out.println(response);
             String[] connectPacket = response.split(PacketIds.SEPARATOR);
             if (!connectPacket[0].equals(Integer.toString(PacketIds.CONNECT))) {
                 server.removeUserById(this.getUserId(), ": Invalid connect!");
@@ -53,11 +51,11 @@ public class User extends Thread {
             }
             String name = connectPacket[1].toLowerCase();
             if (server.hasUserByName(name)) {
-                server.removeUserById(this.getUserId(), ": Invalid name!");
+                server.removeUserById(this.getUserId(), ": Name is occupied!");
                 return;
             }
             if (!Security.nameAllowed(name)) {
-                server.removeUserById(this.getUserId(), ": Invalid name!");
+                server.removeUserById(this.getUserId(), ": Name is blocked!");
                 return;
             }
             int level = Security.MEMBER;
@@ -66,7 +64,7 @@ public class User extends Thread {
             }
             setUserName(name);
             setSecurityLevel(level);
-            server.sendPacket(this, new PacketLog("Welcome " + userName + ", " + server.getUserCount() + " people are online"));
+            sendLog("Welcome " + userName + ", " + server.getUserCount() + " people are online");
             server.broadcast(new PacketLog("New user connected: " + userName), this);
             loop:
             while (!socket.isClosed()) {
@@ -75,7 +73,15 @@ public class User extends Thread {
                 }
                 response = reader.readLine();
                 ScriptServer.print(response);
+                if (response == null){
+                    ScriptServer.print("Response was null");
+                    continue;
+                }
                 String[] packet = response.split(PacketIds.SEPARATOR);
+                if (!Security.isInt(packet[0])){
+                    ScriptServer.print("Invalid packet ID: " + packet[0]);
+                    continue;
+                }
                 int packetID = Integer.parseInt(packet[0]);
                 switch (packetID) {
                     case PacketIds.MESSAGE:
@@ -87,7 +93,7 @@ public class User extends Thread {
                             String[] commands = packetMessage.MESSAGE.split(" ");
                             String command = commands[0].toLowerCase().substring(1);
                             String[] args = Arrays.copyOfRange(commands, 1, commands.length);
-                            CommandHandler.handleCommand(this, command, server, args);
+                            CommandHandler.handleCommand(this, command, args);
                             break;
                         }
                         if (!Security.hasPermission(this, Security.MEMBER)) {
@@ -111,14 +117,6 @@ public class User extends Thread {
         }
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
-    void send(String bytes) {
-        writer.println(bytes);
-    }
-
     public void shutdown() {
         try {
             if (!socket.isClosed()) {
@@ -133,23 +131,45 @@ public class User extends Thread {
         }
     }
 
-    public String getUserId() {
-        return id;
+    void send(String bytes) {
+        writer.println(bytes);
     }
 
-    public int getSecurityLevel() {
-        return securityLevel;
+    public void sendPacket(Packet packet) {
+        send(packet.encode());
+    }
+
+    public void sendMessage(String message, String sender){
+        String username = sender.isEmpty() ? "System" : sender;
+        sendPacket(new PacketMessage(message, sender));
+    }
+
+    public void sendLog(String log){
+        sendPacket(new PacketLog(log));
+    }
+
+    public String getUserId() {
+        return id;
     }
 
     public ScriptServer getServer() {
         return server;
     }
 
+    public int getSecurityLevel() {
+        return securityLevel;
+    }
+
     public void setSecurityLevel(int securityLevel) {
         this.securityLevel = securityLevel;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
     public void setUserName(String userName) {
         this.userName = userName;
+        sendPacket(new PacketName(userName));
     }
 }
