@@ -1,6 +1,7 @@
 package ScriptServer;
 
 import ScriptServer.commands.*;
+import ScriptServer.packets.PacketIds;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,10 +41,11 @@ public class CommandHandler {
     }
 
     public static String getHelp() {
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder out = new StringBuilder();
+        out.append("Help: ");
         for (Map.Entry<String, Command> commandEntry : commands.entrySet()) {
-            stringBuilder.append("\n").append(commandEntry.getValue().USAGE);
+            out.append(PacketIds.SEPARATOR).append(commandEntry.getValue().USAGE);
         }
-        return stringBuilder.toString();
+        return out.toString();
     }
 }

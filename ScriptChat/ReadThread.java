@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class ReadThread extends Thread {
     private final Socket socket;
@@ -48,7 +49,8 @@ public class ReadThread extends Thread {
                         shutdownReason = packetDisconnect.REASON;
                         break loop;
                     case PacketIds.LOG:
-                        PacketLog packetLog = new PacketLog(packet);
+                        String[] message = Arrays.copyOfRange(packet, 1, packet.length);
+                        PacketLog packetLog = new PacketLog(String.join("\n", message));
                         if (packetLog.MESSAGE.isEmpty()) {
                             continue;
                         }
