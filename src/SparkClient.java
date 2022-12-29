@@ -41,6 +41,7 @@ public class SparkClient {
     public void shutdown(String reason) {
         UI.print("Disconnected: " + reason);
         try {
+            sendPacket(new PacketDisconnect("Disconnect"));
             readThread.shutdown();
             writer.close();
             socket.close();

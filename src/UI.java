@@ -37,12 +37,16 @@ public abstract class UI {
         screen.add(messageArea, BorderLayout.SOUTH);
         screen.setVisible(true);
         messageArea.requestFocusInWindow();
-
         screen.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                sparkClient.sendPacket(new PacketDisconnect("Disconnect"));
-                sparkClient.shutdown(": You Disconnected!");
+                try {
+                    sparkClient.shutdown(": You Disconnected!");
+                    Thread.sleep(1000);
+                } catch (Exception ex) {
+                    System.exit(0);
+                }
+                System.exit(0);
             }
         });
     }
