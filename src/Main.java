@@ -9,9 +9,9 @@ public class Main {
             String name =args[2];
             int securityCode = Integer.parseInt(args[3]);
 
-            ScriptClient client = new ScriptClient();
+            SparkClient client = new SparkClient();
             client.start(ip, port, name, securityCode);
-            UI.scriptClient = client;
+            UI.sparkClient = client;
 
         } catch (Exception e) {
             System.out.println("Error starting client: " + e.getMessage());

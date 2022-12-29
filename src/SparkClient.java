@@ -4,7 +4,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class ScriptClient {
+public class SparkClient {
     private PrintWriter writer;
     private Socket socket;
     private ReadThread readThread;
@@ -39,7 +39,7 @@ public class ScriptClient {
     }
 
     public void shutdown(String reason) {
-        UI.print("Disconnected :" + reason);
+        UI.print("Disconnected: " + reason);
         try {
             readThread.shutdown();
             writer.close();

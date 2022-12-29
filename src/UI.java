@@ -9,7 +9,7 @@ public abstract class UI {
     public static JFrame screen;
     public static JTextPane chatArea;
     public static JTextField messageArea;
-    public static ScriptClient scriptClient;
+    public static SparkClient sparkClient;
     public static JScrollPane scrollPane;
 
     public static void init() {
@@ -30,7 +30,7 @@ public abstract class UI {
         screen.add(scrollPane, BorderLayout.CENTER);
 
         messageArea = new JTextField();
-        messageArea.addActionListener(e -> scriptClient.prepareSendMessage(messageArea.getText()));
+        messageArea.addActionListener(e -> sparkClient.prepareSendMessage(messageArea.getText()));
         messageArea.setBorder(new LineBorder(Color.DARK_GRAY, 1));
         messageArea.setMargin(new Insets(10, 10, 10, 10));
         messageArea.setPreferredSize(new Dimension(SCREEN_WIDTH, 50));
@@ -41,8 +41,8 @@ public abstract class UI {
         screen.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                scriptClient.sendPacket(new PacketDisconnect("Disconnect"));
-                scriptClient.shutdown(": You Disconnected!");
+                sparkClient.sendPacket(new PacketDisconnect("Disconnect"));
+                sparkClient.shutdown(": You Disconnected!");
             }
         });
     }

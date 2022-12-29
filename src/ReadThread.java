@@ -9,9 +9,9 @@ import java.util.Arrays;
 public class ReadThread extends Thread {
     private final Socket socket;
     private BufferedReader reader;
-    private ScriptClient client;
+    private SparkClient client;
 
-    public ReadThread(Socket socket, ScriptClient client) {
+    public ReadThread(Socket socket, SparkClient client) {
         this.socket = socket;
         try {
             this.client = client;
