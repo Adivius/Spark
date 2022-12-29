@@ -1,7 +1,3 @@
-import ScriptServer.packets.Packet;
-import ScriptServer.packets.PacketConnect;
-import ScriptServer.packets.PacketMessage;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
