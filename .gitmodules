@@ -1,0 +1,3 @@
+[submodule "SparkServer"]
+	path = SparkServer
+	url = https://github.com/Adivius/SparkServer.git
