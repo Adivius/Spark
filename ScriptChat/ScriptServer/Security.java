@@ -2,8 +2,9 @@ package ScriptServer;
 
 public abstract class Security {
 
-    public static int VISITOR = 0, MEMBER = 1, ADMIN = 2, OPERATOR = 3;
-    public static String[] FORBIDDEN_NAMES = {"system", "server", "operator", "admin", "penis", "console"};
+    public static final int VISITOR = 0, MEMBER = 1, ADMIN = 2, OPERATOR = 3;
+    public static final String[] FORBIDDEN_NAMES = {"system", "server", "operator", "admin", "penis", "console"};
+    public static final int NAME_MAX_LENGTH = 12;
 
     public static boolean hasPermission(User user, int minSecurityLevel) {
         return user.getSecurityLevel() >= minSecurityLevel;

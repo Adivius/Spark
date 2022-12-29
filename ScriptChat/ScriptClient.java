@@ -43,7 +43,7 @@ public class ScriptClient {
     }
 
     public void shutdown(String reason) {
-        UI.print("Disconnected" + reason);
+        UI.print("Disconnected :" + reason);
         try {
             readThread.shutdown();
             writer.close();
@@ -73,7 +73,7 @@ public class ScriptClient {
         if (message.contains("~")) {
             return;
         }
-        sendPacket(new PacketMessage(message));
+        sendPacket(new PacketMessage(message, userName, 0));
         UI.messageArea.setText("");
     }
 

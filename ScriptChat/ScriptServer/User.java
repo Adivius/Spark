@@ -50,6 +50,10 @@ public class User extends Thread {
                 return;
             }
             String name = connectPacket[1].toLowerCase();
+            if (name.length() > Security.NAME_MAX_LENGTH) {
+                server.removeUserById(this.getUserId(), "Name to long!");
+                return;
+            }
             if (server.hasUserByName(name)) {
                 server.removeUserById(this.getUserId(), "Name is occupied!");
                 return;
@@ -141,7 +145,7 @@ public class User extends Thread {
 
     public void sendMessage(String message, String sender) {
         String username = sender.isEmpty() ? "System" : sender;
-        sendPacket(new PacketMessage(message, username));
+        sendPacket(new PacketMessage(message, username, System.currentTimeMillis()));
     }
 
     public void sendLog(String log) {

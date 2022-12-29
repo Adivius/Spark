@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 public class ReadThread extends Thread {
@@ -42,7 +43,9 @@ public class ReadThread extends Thread {
                 switch (packetID) {
                     case PacketIds.MESSAGE:
                         PacketMessage packetMessage = new PacketMessage(packet);
-                        UI.print("[" + packetMessage.SENDER + "]: " + packetMessage.MESSAGE);
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MMM/yyyy HH:mm");
+                        String time = simpleDateFormat.format(packetMessage.TIMESTAMP);
+                        UI.print("[" + packetMessage.SENDER + ", " + time + "]: " + packetMessage.MESSAGE);
                         break;
                     case PacketIds.DISCONNECT:
                         PacketDisconnect packetDisconnect = new PacketDisconnect(packet);
