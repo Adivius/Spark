@@ -43,7 +43,7 @@ public class ReadThread extends Thread {
                         PacketMessage packetMessage = new PacketMessage(packet);
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MMM/yyyy HH:mm");
                         String time = simpleDateFormat.format(packetMessage.TIMESTAMP);
-                        UI.print("[" + packetMessage.SENDER + ", " + time + "]: " + packetMessage.MESSAGE);
+                        UI.print("[" + time + ", " + packetMessage.SENDER + "]: " + packetMessage.MESSAGE);
                         break;
                     case PacketIds.DISCONNECT:
                         PacketDisconnect packetDisconnect = new PacketDisconnect(packet);

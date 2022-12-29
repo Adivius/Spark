@@ -42,10 +42,7 @@ public abstract class UI {
             public void windowClosing(WindowEvent e) {
                 try {
                     sparkClient.shutdown(": You Disconnected!");
-                    Thread.sleep(5000);
-                } catch (Exception ex) {
-                    System.exit(0);
-                }
+                } catch (Exception ignored) {}
                 System.exit(0);
             }
         });
