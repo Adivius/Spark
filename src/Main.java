@@ -7,11 +7,11 @@ public class Main {
         try {
             String ip = args[0];
             int port = Integer.parseInt(args[1]);
-            String name =args[2];
-            int securityCode = Integer.parseInt(args[3]);
+            String name = args[2];
+            String pw_hash = Security.hashMd5(args[3]);
 
             SparkClient client = new SparkClient();
-            client.start(ip, port, name, securityCode);
+            client.start(ip, port, name, pw_hash);
             UI.sparkClient = client;
 
         } catch (Exception e) {

@@ -11,7 +11,7 @@ public class SparkClient {
     private String userName;
 
 
-    public void start(String ip, int port, String name, int securityCode) {
+    public void start(String ip, int port, String name, String pw_hash) {
         try {
             socket = new Socket(ip, port);
             UI.print("Connected to the chat server on port " + port);
@@ -31,7 +31,7 @@ public class SparkClient {
             ex.printStackTrace();
         }
         try {
-            sendPacket(new PacketConnect(name, securityCode));
+            sendPacket(new PacketConnect(name, pw_hash));
         } catch (Exception ex) {
             UI.print("Error sending connect Packet: " + ex.getMessage());
             ex.printStackTrace();
