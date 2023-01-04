@@ -5,7 +5,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public abstract class UI {
-    public static final int SCREEN_HEIGHT = 450, SCREEN_WIDTH = 800;
+    public static final int SCREEN_HEIGHT = 550, SCREEN_WIDTH = 900;
     public static JFrame screen;
     public static JTextPane chatArea;
     public static JTextField messageArea;
@@ -15,10 +15,10 @@ public abstract class UI {
     public static void init() {
         screen = new JFrame("ScriptChat");
         screen.setLayout(new BorderLayout());
-        screen.setLocationRelativeTo(null);
         screen.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         screen.setBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         screen.requestFocus();
+        screen.setLocationRelativeTo(null);
 
         chatArea = new JTextPane();
         chatArea.setEditable(false);
@@ -42,7 +42,8 @@ public abstract class UI {
             public void windowClosing(WindowEvent e) {
                 try {
                     sparkClient.shutdown(": You Disconnected!");
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
                 System.exit(0);
             }
         });

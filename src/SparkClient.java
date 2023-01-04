@@ -70,16 +70,16 @@ public class SparkClient {
         if (message.contains("~")) {
             return;
         }
-        sendPacket(new PacketMessage(message, userName, 0));
+        sendPacket(new PacketMessage(message, userName, 0, "general"));
         UI.messageArea.setText("");
+    }
+
+    public String getUserName() {
+        return userName;
     }
 
     public void setUserName(String userName) {
         this.userName = userName;
         UI.screen.setTitle(userName);
-    }
-
-    public String getUserName() {
-        return userName;
     }
 }

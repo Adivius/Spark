@@ -18,9 +18,9 @@ public class Main {
             UI.print("Error starting client: " + Arrays.toString(e.getStackTrace()));
             System.out.println("Error starting client: " + Arrays.toString(e.getStackTrace()));
             e.printStackTrace();
-            try{
+            try {
                 Thread.sleep(5000);
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 System.exit(0);
             }
             System.exit(0);
